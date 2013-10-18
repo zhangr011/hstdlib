@@ -372,7 +372,7 @@
 %% 			case  get_db_config(?CONFIG_FILE, Db) of
 %% 				[_Type, _Host, _Port, _User, _Password, DB, _Poolsize, _Encode] ->	
 %% 					try 
-%% 						Sql0 = lists:concat(["SELECT max(length(column_name)) FROM information_schema.columns WHERE table_schema= '", tool:to_list(DB), "'"]), 
+%% 						Sql0 = lists:concat(["SELECT max(length(column_name)) FROM information_schema.columns WHERE table_schema= '", misc:to_list(DB), "'"]), 
 %% 						MaxColumnLen = 	
 %% 							case  get_all(Db, list_to_binary(Sql0)) of
 %% 								[] -> 30;
@@ -382,7 +382,7 @@
 %% 							true -> put(maxColumnLen, MaxColumnLen);
 %% 							_-> no_action
 %% 						end,
-%% 						Sql = lists:concat(["SELECT table_name, table_comment FROM information_schema.tables WHERE table_schema='", tool:to_list(DB), "' and table_type ='BASE TABLE'"]),
+%% 						Sql = lists:concat(["SELECT table_name, table_comment FROM information_schema.tables WHERE table_schema='", misc:to_list(DB), "' and table_type ='BASE TABLE'"]),
 %% 						case  get_all(Db, list_to_binary(Sql)) of 
 %% 							[] ->
 %% %% 								io:format("Error(~p)_1  ~n",[Db]),
@@ -477,22 +477,22 @@
 %% 					   		T =:= <<"new_player_card">> ->
 %% 								FileClear = "../temp/" ++ DB_name ++ "_table_clear.sql",
 %% 								file:write_file(FileClear, 
-%% 										list_to_binary(io_lib:format("update ~s set player_id=0, is_used=0, use_time=0;	/*~s*/\t\n",[tool:to_list(T), Table_Comment])),
+%% 										list_to_binary(io_lib:format("update ~s set player_id=0, is_used=0, use_time=0;	/*~s*/\t\n",[misc:to_list(T), Table_Comment])),
 %% 										[append]);
 %% 							true ->
 %% 							FileClear = "../temp/" ++ DB_name ++ "_table_clear.sql",
 %% 							file:write_file(FileClear, 
-%% 								list_to_binary(io_lib:format("delete from ~s;           /*~s*/\t\n",[tool:to_list(T), Table_Comment])), 
+%% 								list_to_binary(io_lib:format("delete from ~s;           /*~s*/\t\n",[misc:to_list(T), Table_Comment])), 
 %% 								[append])
 %% 						end,
 
-%% 						Sql1 = lists:concat(["SELECT column_name, data_type, column_default, column_comment, extra FROM information_schema.columns WHERE table_schema= '", tool:to_list(DB_name), "' AND table_name= '", tool:to_list(T),  "'"]),
+%% 						Sql1 = lists:concat(["SELECT column_name, data_type, column_default, column_comment, extra FROM information_schema.columns WHERE table_schema= '", misc:to_list(DB_name), "' AND table_name= '", misc:to_list(T),  "'"]),
 %% 						case  get_all(Pool_id, list_to_binary(Sql1)) of
 %% 							[] -> error2;
 %% 							B -> 
 %% 							  {DL, _} =
 %% 								lists:mapfoldl(fun([Field, Data_type0, Default0, Comment0, Extra0], Sum) -> 
-%% 											Data_type =  tool:to_atom(Data_type0),
+%% 											Data_type =  misc:to_atom(Data_type0),
 %% 											Default = 
 %% 												case Default0 of
 %% 													undefined -> 
@@ -518,32 +518,32 @@
 %% 															binary -> 
 %% 																lists:concat(["", binary_to_list(Val) ,""]);
 %% 															integer -> 
-%% 																tool:to_integer(binary_to_list(Val));	
+%% 																misc:to_integer(binary_to_list(Val));	
 %% 															decimal ->
-%% 																tool:to_float(binary_to_list(Val));
+%% 																misc:to_float(binary_to_list(Val));
 %% 															_ -> 
 %% 																lists:concat([binary_to_list(Val)])
 %% 														end																				
 %% 												end,	
-%% %% TT = tool:to_atom(T),											
+%% %% TT = misc:to_atom(T),											
 %% %% if TT == player ->
-%% %% 	io:format("1___/~p/~p/~p/~p/~p/~p/ ~n", [tool:to_list(T), tool:to_atom(Field), Data_type, erlydb_field:get_erl_type(Data_type), Default0, Default]);
+%% %% 	io:format("1___/~p/~p/~p/~p/~p/~p/ ~n", [misc:to_list(T), misc:to_atom(Field), Data_type, erlydb_field:get_erl_type(Data_type), Default0, Default]);
 %% %%    true ->
 %% %% 	   ok
 %% %% end,											
 %% 											Shortfield = if Sum < 26 ->
-%% 																 tool:to_atom([Sum+97]);
+%% 																 misc:to_atom([Sum+97]);
 %% 															true ->
-%% 																 tool:to_atom(list_to_binary(io_lib:format("z~p", [Sum-25])))
+%% 																 misc:to_atom(list_to_binary(io_lib:format("z~p", [Sum-25])))
 %% 														end,
 %% 											S1 = if Sum+1 == length(B) -> 
-%% 													io_lib:format("{~s, ~p, \"~p\"}",[tool:to_atom(Field), Default, Shortfield]);
+%% 													io_lib:format("{~s, ~p, \"~p\"}",[misc:to_atom(Field), Default, Shortfield]);
 %% 												true -> 
-%% 													io_lib:format("{~s, ~p, \"~p\"},",[tool:to_atom(Field), Default, Shortfield])
+%% 													io_lib:format("{~s, ~p, \"~p\"},",[misc:to_atom(Field), Default, Shortfield])
 %% 										 	end,
-%% 											TTT = lists:concat([tool:to_atom(Field), "", Sum]),
-%% 											S2 = io_lib:format("~s\"~s\" => \"~p\", ~s/* ~s */\t\n",[lists:duplicate(7, "\t"), tool:to_atom(Field), Shortfield, lists:duplicate(MaxColumnLen-length(TTT), " "), Comment0]),
-%% 											S3 = io_lib:format("~s\"~p\" => \"~s\", ~s/* ~s */\t\n",[lists:duplicate(7, "\t"), Shortfield, tool:to_atom(Field), lists:duplicate(MaxColumnLen-length(TTT), " "), Comment0]),
+%% 											TTT = lists:concat([misc:to_atom(Field), "", Sum]),
+%% 											S2 = io_lib:format("~s\"~s\" => \"~p\", ~s/* ~s */\t\n",[lists:duplicate(7, "\t"), misc:to_atom(Field), Shortfield, lists:duplicate(MaxColumnLen-length(TTT), " "), Comment0]),
+%% 											S3 = io_lib:format("~s\"~p\" => \"~s\", ~s/* ~s */\t\n",[lists:duplicate(7, "\t"), Shortfield, misc:to_atom(Field), lists:duplicate(MaxColumnLen-length(TTT), " "), Comment0]),
 %% 											S4 = case Extra0 of
 %% 														<<"auto_increment">> -> [Field, Shortfield];
 %% 														_ -> []
@@ -558,7 +558,7 @@
 %% 											  end,
 							  
 %% 							    DL1 = lists:map(fun([S1, _S2, _S3, _S4])-> S1 end, DL),
-%% 								E = io_lib:format('{~s, [~p, [~s]]}', [tool:to_atom(T), FieldShortMark, lists:flatten(DL1)]),
+%% 								E = io_lib:format('{~s, [~p, [~s]]}', [misc:to_atom(T), FieldShortMark, lists:flatten(DL1)]),
 %% 								file:write_file(File, 
 %% 										list_to_binary(io_lib:format("		~s,\t\n",[E])), 
 %% 										[append]),	
@@ -574,7 +574,7 @@
 %% 									end,
 %% %% 					io:format("Here_2_~p____~p___~p__~n",[T, DL4_1, AutoIncField]),		  
 %% 								E1 = io_lib:format('"~s" => array(\t\n\t\t\t\t"FieldShortMark" => ~p, \t\n\t\t\t\t"AutoIncField" => ~p, \t\n~s"FieldShortList" => array(\t\n~s~s), \t\n~s"FieldLongList" =>array(\t\n~s~s)\t\n~s)', 
-%% 												   [tool:to_atom(T), FieldShortMark, AutoIncField, lists:duplicate(4, "\t"), lists:flatten(DL2), lists:duplicate(7, "\t"), lists:duplicate(4, "\t"), lists:flatten(DL3),lists:duplicate(7, "\t"), lists:duplicate(4, "\t")]),
+%% 												   [misc:to_atom(T), FieldShortMark, AutoIncField, lists:duplicate(4, "\t"), lists:flatten(DL2), lists:duplicate(7, "\t"), lists:duplicate(4, "\t"), lists:flatten(DL3),lists:duplicate(7, "\t"), lists:duplicate(4, "\t")]),
 %% 								file:write_file(Filephp, 
 %% 										list_to_binary(io_lib:format("		~s,\t\n",[E1])), 
 %% 										[append]),									
@@ -634,7 +634,7 @@
 				
 %% 				F = fun({_Pool_id, _DB_name, T, _Table_Comment}) ->
 %% 							file:write_file(Filename, 
-%% 										list_to_binary(io_lib:format("		~s,\t\n",[tool:to_atom(T)])), 
+%% 										list_to_binary(io_lib:format("		~s,\t\n",[misc:to_atom(T)])), 
 %% 										[append])
 %% 					end,
 %% 				[F(T0) || T0 <- A],

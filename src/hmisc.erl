@@ -2,9 +2,10 @@
 %%% @Module  : misc
 %%% @Created : 2013.10.18
 %%% @Description: 常用函数
+%%% @通用函数 for happytree
 %%%----------------------------------------
 
--module(misc).
+-module(hmisc).
 
 %%
 %% Include files
@@ -44,7 +45,7 @@
 whereis_name({local, Atom}) -> 
     erlang:whereis(Atom);
 %% whereis_name({local, List}) when is_list(List) -> 
-%%     Atom = tool:to_atom(List),
+%%     Atom = misc:to_atom(List),
 %% 	erlang:whereis(Atom);
 
 whereis_name({global, Atom}) ->
@@ -120,25 +121,25 @@ rand_to_process(S) ->
     lists:nth(1, S).
 
 player_process_name(PlayerId) ->
-    tool:to_atom(player_process_name2(PlayerId)).
+    misc:to_atom(player_process_name2(PlayerId)).
 
 player_process_name2(PlayerId) when is_integer(PlayerId) or is_atom(PlayerId) ->
     lists:concat([p_p_, PlayerId]);
 player_process_name2(PlayerId) when is_list(PlayerId) ->
     lists:flatten(["p_p_"|PlayerId]);
 player_process_name2(PlayerId) when is_binary(PlayerId) ->
-    lists:concat([p_p_,tool:md5(PlayerId)]).
+    lists:concat([p_p_,misc:md5(PlayerId)]).
 
 %% %% 在一账号多个角色的情况下，需要按账号ID判断唯一性
 %% player_process_accountname(AccountId) ->
-%%     tool:to_atom(player_process_accountname2(AccountId)).
+%%     misc:to_atom(player_process_accountname2(AccountId)).
 
 %% player_process_accountname2(AccountId) when is_integer(AccountId) or is_atom(AccountId) ->
 %% 	lists:concat([p_a_, AccountId]);
 %% player_process_accountname2(AccountId) when is_list(AccountId) ->
 %% 	lists:flatten(["p_a_"|AccountId]);
 %% player_process_accountname2(AccountId) when is_binary(AccountId) ->
-%% 	lists:concat([p_a_,tool:md5(AccountId)]).
+%% 	lists:concat([p_a_,misc:md5(AccountId)]).
 
 gateway_client_process_name(ServerId) when is_integer(ServerId) or is_atom(ServerId) ->
     lists:concat([gateway_srv_,ServerId]).
@@ -146,7 +147,7 @@ gateway_client_process_name(ServerId) when is_integer(ServerId) or is_atom(Serve
 
 %% 创建进程名
 create_process_name(Prefix, List) ->
-    tool:to_atom(lists:concat(lists:flatten([Prefix] ++ lists:map(fun(T) -> ['_', T] end, List)))).
+    misc:to_atom(lists:concat(lists:flatten([Prefix] ++ lists:map(fun(T) -> ['_', T] end, List)))).
 
 %% 获取来源IP 
 get_ip(Socket) ->
@@ -590,9 +591,9 @@ f2s(F) when is_float(F) ->
 to_atom(Msg) when is_atom(Msg) -> 
     Msg;
 to_atom(Msg) when is_binary(Msg) -> 
-    tool:list_to_atom2(binary_to_list(Msg));
+    misc:list_to_atom2(binary_to_list(Msg));
 to_atom(Msg) when is_list(Msg) -> 
-    tool:list_to_atom2(Msg);
+    misc:list_to_atom2(Msg);
 to_atom(_) -> 
     throw(other_value).  %%list_to_atom("").
 
@@ -970,10 +971,10 @@ send_pro(Player, Cmd, Bin) ->
     end.
 
 test_to_binary() ->
-    S1 =tool:to_binary(<<"中国">>),
-    S2 = tool:to_binary("中国"),
-    S3 = tool:to_binary("china"),
-    S4 = tool:to_binary([20013,22269]),
+    S1 =misc:to_binary(<<"中国">>),
+    S2 = misc:to_binary("中国"),
+    S3 = misc:to_binary("china"),
+    S4 = misc:to_binary([20013,22269]),
 
     ?DEBUG("S1 : ~w, S2 : ~w, S3 : ~w, S4 : ~w", [S1, S2, S3, S4]),
     ?DEBUG("S1 : ~ts, S2 : ~ts, S3 : ~ts, S4 : ~ts", [S1, S2, S3, S4]),
@@ -1243,7 +1244,7 @@ list_to_string(List) ->
 		true -> "";
 		false ->
 			F = fun(E) ->
-						tool:to_list(E)++","
+						misc:to_list(E)++","
 				end,
 			L1 = [F(E)||E <- List] ,
 			L2 = lists:concat(L1),
@@ -1524,7 +1525,7 @@ write_binary(Type, ValueList)
     %%          type value
     %%      )
     Length = length(ValueList),
-    NewBinary = tool:to_binary(lists:map(fun(Value) ->
+    NewBinary = misc:to_binary(lists:map(fun(Value) ->
                                                  write_binary(Type, Value)
                                          end,
                                          ValueList)),
@@ -1546,7 +1547,7 @@ write_binary(TypeList, [Head | _Tail] = ValueList)
     if
         length(TypeList) =:= length(ValueList) -> 
             %% 根据TypeList和ValueList匹配打包成二进制数据
-            tool:to_binary(lists:zipwith(fun(Type, Value) ->
+            misc:to_binary(lists:zipwith(fun(Type, Value) ->
                                                  write_binary(Type, Value)
                                          end, TypeList, ValueList));
         true ->
@@ -1566,7 +1567,7 @@ write_binary(TypeList, [Head | _Tail] = ValueList)
     %%      ...
     %%      )
     Length = length(ValueList),
-    NBinary = tool:to_binary(lists:map(
+    NBinary = misc:to_binary(lists:map(
                                fun(ValueListIn) ->
                                        write_binary(TypeList, ValueListIn)
                                end, ValueList)),
@@ -1577,7 +1578,7 @@ write_binary(TypeList, [Head | _Tail] = ValueList)
 %% [{byte, Byte}, {int16, Int16} ... {string, String}] -> Binary.
 %% @end
 write_list_to_binary(ArgList) when is_list(ArgList) ->
-    tool:to_binary(lists:map(fun({Type, Value}) ->
+    misc:to_binary(lists:map(fun({Type, Value}) ->
                                      %% ?DEBUG("TYPE:~w~nValue:~w~n", [Type, Value]),
                                      write_binary(Type, Value)
                              end, ArgList)).
@@ -1924,14 +1925,14 @@ get_server_name(Sn) ->
                 []
         end,
     %%?DEBUG("~p~n", [ServerNameList]),
-    tool:to_binary(proplists:get_value(to_integer(Sn), ServerNameList, "一将功成")).
+    misc:to_binary(proplists:get_value(to_integer(Sn), ServerNameList, "一将功成")).
 
 -define(RE_METACHARACTERS, "()[]{}\|*.+?:!$^<>=").
 
 re_escape(List) when is_list(List)->
     re_escape(List, []);
 re_escape(BinList) when is_binary(BinList)->
-    re_escape(tool:to_list(BinList), []);
+    re_escape(misc:to_list(BinList), []);
 re_escape(_) ->
     [].
 re_escape([], Acc) -> 

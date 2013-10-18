@@ -57,7 +57,7 @@ get_log_level() ->
 %% 是否统计数据库访问情况 （1：开启; 0: 关闭）   
 get_stat_db() ->
     case application:get_env(stat_db) of
-	{ok, Stat_db} -> tool:to_integer(Stat_db);
+	{ok, Stat_db} -> misc:to_integer(Stat_db);
 	_ -> 0
     end.
 
@@ -65,7 +65,7 @@ get_stat_db() ->
 get_infant_ctrl() ->
     case application:get_env(infant_ctrl) of
         {ok, Mode} ->
-            tool:to_integer(Mode);
+            misc:to_integer(Mode);
         _ ->
             0
     end.
@@ -96,7 +96,7 @@ get_gateway() ->
                 {_, Ip}   = lists:keyfind(ip, 1, Gateway),
                 {_, Port} = lists:keyfind(port, 1, Gateway),
                 {_, Group}= lists:keyfind(group, 1, Gateway),
-                [tool:to_atom(Node), tool:to_atom(Cookie), Ip, Port, Group]
+                [misc:to_atom(Node), misc:to_atom(Cookie), Ip, Port, Group]
             catch
                 _:_ -> exit({bad_config, {server, {gateway, config_error}}})
             end;
@@ -215,7 +215,7 @@ get_one_server_no() ->
     try
         Sn = get_server_no(),
         [H|_T] = string:tokens(Sn,","),
-        tool:to_integer(H)
+        misc:to_integer(H)
     catch 
         _:_ -> 1
     end.
@@ -308,7 +308,7 @@ get_card_key() ->
 %% 商城是否强制成 铜币购买
 get_shop_force_coin() ->
     case application:get_env(shop_force_coin) of
-	{ok, Force} -> tool:to_integer(Force);
+	{ok, Force} -> misc:to_integer(Force);
 	_ -> 0
     end.
 

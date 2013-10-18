@@ -469,9 +469,9 @@ table_to_record(Table_name, Record_name, TableComment) ->
                                                "%%%------------------------------------------------    \t\n",
                                                "\t\n",
                                                io_lib:format("-ifndef(DB_~s_HRL).\t\n",
-                                                             [string:to_upper(tool:to_list(Table_name))]),
+                                                             [string:to_upper(misc:to_list(Table_name))]),
                                                io_lib:format("-define(DB_~s_HRL, true).\t\n",
-                                                             [string:to_upper(tool:to_list(Table_name))]),
+                                                             [string:to_upper(misc:to_list(Table_name))]),
                                                "\t\n",
                                                list_to_binary(
                                                  io_lib:format("%% ~s\t\n", [Table_comment])),

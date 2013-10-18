@@ -1,4 +1,4 @@
--module(ets_util).
+-module(hetsutil).
 
 -include("define_logger.hrl").
 

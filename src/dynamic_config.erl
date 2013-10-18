@@ -125,6 +125,6 @@ get_infant_ctrl() ->
         1 ->
             [lists:concat(['get_infant_ctrl(_)->1.\t\n'])];
         _ ->
-            [lists:concat(['get_infant_ctrl(AccName)-> \t\n L3 = string:left(tool:to_list(AccName), 3),\t\n if (L3 == "llj") -> \t\n 1; \t\n    true -> 0 \t\n end. \t\n'])]
+            [lists:concat(['get_infant_ctrl(AccName)-> \t\n L3 = string:left(misc:to_list(AccName), 3),\t\n if (L3 == "llj") -> \t\n 1; \t\n    true -> 0 \t\n end. \t\n'])]
     end.
 
