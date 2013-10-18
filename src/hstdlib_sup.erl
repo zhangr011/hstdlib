@@ -24,6 +24,5 @@ start_link() ->
 %% ===================================================================
 
 init([]) ->
-    ets:new(ets_timer, [set, protected, named_table]),
     {ok, { {one_for_one, 5, 10}, [?CHILD(mod_timer, worker)]} }.
 

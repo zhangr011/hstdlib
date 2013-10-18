@@ -2,11 +2,11 @@
  [
   {description, ""},
   {vsn, "1"},
-  {module, [
-            hetsutil,
-            hfile,
-            hmisc,
-            hmisctime
+  {modules, [
+             hetsutil,
+             hfile,
+             hmisc,
+             hmisctime
             ]},
   {registered, []},
   {applications, [
