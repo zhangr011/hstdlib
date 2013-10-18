@@ -35,7 +35,10 @@
          write_system_info/3,
          delete_system_info/1,
          write_monitor_pid/3,
-         delete_monitor_pid/1
+         delete_monitor_pid/1,
+         to_bool/1,
+         to_binary/1,
+         f2s/1
         ]).
 
 %%
@@ -95,31 +98,8 @@ one_to_two(One) ->
 
 %% @doc get the time's seconds for integer type
 %% @spec get_seconds(Time) -> integer() 
-get_seconds(Time)->
-    {_MegaSecs, Secs, _MicroSecs} = Time, 
-    Secs.
 
-time_format(Now) -> 
-    {{Y,M,D},{H,MM,S}} = calendar:now_to_local_time(Now),
-    lists:concat([Y, "-", one_to_two(M), "-", one_to_two(D), " ", 
-                  one_to_two(H) , ":", one_to_two(MM), ":", one_to_two(S)]).
-date_format(Now) ->
-    {{Y,M,D},{_H,_MM,_S}} = calendar:now_to_local_time(Now),
-    lists:concat([Y, "-", one_to_two(M), "-", one_to_two(D)]).
-date_hour_format(Now) ->
-    {{Y,M,D},{H,_MM,_S}} = calendar:now_to_local_time(Now),
-    lists:concat([Y, "-", one_to_two(M), "-", one_to_two(D), " ", one_to_two(H)]).
-date_hour_minute_format(Now) ->
-    {{Y,M,D},{H,MM,_S}} = calendar:now_to_local_time(Now),
-    lists:concat([Y, "-", one_to_two(M), "-", one_to_two(D), " ", one_to_two(H) , "-", one_to_two(MM)]).
-%% split by -
-minute_second_format(Now) ->
-    {{_Y,_M,_D},{H,MM,_S}} = calendar:now_to_local_time(Now),
-    lists:concat([one_to_two(H) , "-", one_to_two(MM)]).
 
-hour_minute_second_format(Now) ->
-    {{_Y,_M,_D},{H,MM,S}} = calendar:now_to_local_time(Now),
-    lists:concat([one_to_two(H) , ":", one_to_two(MM), ":", one_to_two(S)]).
 
 rand_to_process(S) ->
     %% Rand = random:uniform(?SEND_MSG),
@@ -167,7 +147,7 @@ ip_to_binary(Ip) ->
     case Ip of 
         {A1,A2,A3,A4} -> 
             [ integer_to_list(A1), "." , integer_to_list(A2), "." , integer_to_list(A3), "." , integer_to_list(A4) ];
-        _ -> 
+        _ ->
             "-"
     end.
 

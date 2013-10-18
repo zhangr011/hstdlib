@@ -28,7 +28,32 @@ info() ->
      ets:info(ets_timer), 
      ets:tab2list(ets_timer)
     ].
+%%这里是拷贝过来的 time函数，由于造成了EUNIT报错，所以打上了注释
+%%get_seconds(Time)->
+  %%  {_MegaSecs, Secs, _MicroSecs} = Time, 
+    %%Secs.
 
+%%time_format(Now) -> 
+  %%  {{Y,M,D},{H,MM,S}} = calendar:now_to_local_time(Now),
+    %%lists:concat([Y, "-", one_to_two(M), "-", one_to_two(D), " ", 
+    %%              one_to_two(H) , ":", one_to_two(MM), ":", one_to_two(S)]).
+%%date_format(Now) ->
+  %%  {{Y,M,D},{_H,_MM,_S}} = calendar:now_to_local_time(Now),
+    %%lists:concat([Y, "-", one_to_two(M), "-", one_to_two(D)]).
+%%date_hour_format(Now) ->
+  %%  {{Y,M,D},{H,_MM,_S}} = calendar:now_to_local_time(Now),
+    %%lists:concat([Y, "-", one_to_two(M), "-", one_to_two(D), " ", one_to_two(H)]).
+%%date_hour_minute_format(Now) ->
+  %%  {{Y,M,D},{H,MM,_S}} = calendar:now_to_local_time(Now),
+    %%lists:concat([Y, "-", one_to_two(M), "-", one_to_two(D), " ", one_to_two(H) , "-", one_to_two(MM)]).
+%% split by -
+%%minute_second_format(Now) ->
+  %%  {{_Y,_M,_D},{H,MM,_S}} = calendar:now_to_local_time(Now),
+    %%lists:concat([one_to_two(H) , "-", one_to_two(MM)]).
+
+%%hour_minute_second_format(Now) ->
+  %%  {{_Y,_M,_D},{H,MM,S}} = calendar:now_to_local_time(Now),
+    %%lists:concat([one_to_two(H) , ":", one_to_two(MM), ":", one_to_two(S)]).
 %% ====================================================================
 %% Server functions
 %% ====================================================================
