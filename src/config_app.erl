@@ -1,6 +1,6 @@
 -module(config_app). 
 
--include_lib("leshulib/include/define_logger.hrl").
+-include("define_logger.hrl").
 
 -export([
          get_application/0,

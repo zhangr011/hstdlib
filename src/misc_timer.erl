@@ -10,19 +10,272 @@
 %% --------------------------------------------------------------------
 %% Include files
 %% --------------------------------------------------------------------
--include_lib("leshulib/include/define_logger.hrl").
+-include("define_logger.hrl").
+-include("define_time.hrl").
 
 %% --------------------------------------------------------------------
 %% External exports
--export([now/0, now_seconds/0, cpu_time/0, start_link/0, start/1, info/0]).
+-export([now_seconds/0, cpu_time/0, start_link/0, start/1, info/0]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
+-export([
+         unixtime/0,
+         longunixtime/0,
+         seconds_to_localtime/1,
+         get_today_second_passed/0,
+         get_day_second_passed/1,
+         get_seconds_to_tomorrow/0,
+         is_same_month/2,
+         is_same_date/2
+        ]).
+
+
 %% ====================================================================
 %% External functions
 %% ====================================================================
-now() -> 
+%% 时间函数
+%% -----------------------------------------------------------------
+%% 根据1970年以来的秒数获得日期
+%% -----------------------------------------------------------------
+
+%% 取得当前的unix时间戳，秒级
+unixtime() ->
+    {M, S, _} = current(),
+    M * 1000000 + S.
+
+%% 取得当前的unix时间戳，毫秒级
+longunixtime() ->
+    {M, S, Ms} = current(),
+    (M * 1000000000000 + S * 1000000 + Ms) div 1000.
+
+%% seconds to localtime
+seconds_to_localtime(Seconds) ->
+    DateTime = calendar:gregorian_seconds_to_datetime(
+                 Seconds + ?DIFF_SECONDS_0000_1900),
+    calendar:universal_time_to_local_time(DateTime).
+
+%% -----------------------------------------------------------------
+%% 判断是否同一天
+%% -----------------------------------------------------------------
+is_same_date(Seconds1, Seconds2) ->
+    %% 需要考虑时区问题
+    NDay = (Seconds1 + ?TIME_ZONE_SECONDS) div ?ONE_DAY_SECONDS,
+    ODay = (Seconds2 + ?TIME_ZONE_SECONDS) div ?ONE_DAY_SECONDS,
+    NDay =:= ODay.
+
+%% -----------------------------------------------------------------
+%% 判断是否同一月
+%% -----------------------------------------------------------------
+is_same_month(Seconds1, Seconds2) ->
+    {{Year1, Month1, _Day1}, _Time1} = timestamp_to_datetime(Seconds1),
+    {{Year2, Month2, _Day2}, _Time2} = timestamp_to_datetime(Seconds2),
+    %% ?DEBUG("is_same_month Y:~p M:~p d:~p",[Year1,Month1,_Day1]),
+    %% ?DEBUG("is_same_month Y:~p M:~p d:~p",[Year2,Month2,_Day2]),
+    if 
+        (Year1 == Year2) andalso (Month1 == Month2) -> 
+            true;
+        true -> 
+            false
+    end.
+
+%% 获取今天已经流逝的秒数
+get_today_second_passed() ->
+    ((unixtime() + ?TIME_ZONE_SECONDS) rem ?ONE_DAY_SECONDS).
+
+%% 获取当前已经流逝的时间（秒）
+get_day_second_passed(Time) ->
+    Time - ((Time + ?TIME_ZONE_SECONDS) rem ?ONE_DAY_SECONDS).
+
+%% 获取当天0点秒数
+get_timestamp_of_today_start() ->
+    Now = unixtime(),
+    Now - ((Now + ?TIME_ZONE_SECONDS) rem ?ONE_DAY_SECONDS).
+
+get_timestamp_of_tomorrow_start() ->
+    get_timestamp_of_today_start() + ?ONE_DAY_SECONDS.
+
+%% 获取距离明天0点的秒数
+get_seconds_to_tomorrow() ->
+    get_timestamp_of_today_start() + ?ONE_DAY_SECONDS - unixtime().
+
+%% 获取距离明天4点的秒数
+get_seconds_to_tomorrow_4() ->
+    ?ONE_HOUR_SECONDS * 4 + get_seconds_to_tomorrow().
+
+%% 获取本周开始的秒数
+get_timestamp_of_week_start() ->
+    Now = unixtime(),
+    Now - ((Now + ?TIME_ZONE_SECONDS) rem ?ONE_WEEK_SECONDS).
+
+%% -----------------------------------------------------------------
+%% 判断是否同一星期
+%% -----------------------------------------------------------------
+is_same_week(Seconds1, Seconds2) ->
+    {{Year1, Month1, Day1}, Time1} = seconds_to_localtime(Seconds1),
+    % 星期几
+    Week1  = calendar:day_of_the_week(Year1, Month1, Day1),
+    % 从午夜到现在的秒数
+    Diff1  = calendar:time_to_seconds(Time1),
+    Monday = Seconds1 - Diff1 - (Week1 - 1) * ?ONE_DAY_SECONDS,
+    Sunday = Seconds1 + (?ONE_DAY_SECONDS - Diff1) + 
+        (7 - Week1) * ?ONE_DAY_SECONDS,
+    if
+        ((Seconds2 >= Monday) and (Seconds2 < Sunday)) ->
+            true;
+        true ->
+            false
+    end.
+
+%% -----------------------------------------------------------------
+%% 获取当天0点和第二天0点
+%% -----------------------------------------------------------------
+get_midnight_seconds(Seconds) ->
+    {{_Year, _Month, _Day}, Time} = seconds_to_localtime(Seconds),
+    %% 从午夜到现在的秒数
+    Diff   = calendar:time_to_seconds(Time),
+    %% 获取当天0点
+    Today  = Seconds - Diff,
+    %% 获取第二天0点
+    NextDay = Seconds + (?ONE_DAY_SECONDS - Diff),
+    {Today, NextDay}.
+
+%% -----------------------------------------------------------------
+%% 计算相差的天数
+%% -----------------------------------------------------------------
+get_days_passed(Seconds1, Seconds2) ->
+    {{Year1, Month1, Day1}, _} = seconds_to_localtime(Seconds1),
+    {{Year2, Month2, Day2}, _} = seconds_to_localtime(Seconds2),
+    Days1 = calendar:date_to_gregorian_days(Year1, Month1, Day1),
+    Days2 = calendar:date_to_gregorian_days(Year2, Month2, Day2),
+    abs(Days2 - Days1).
+
+%% 获取从午夜到现在的秒数
+get_today_current_second() ->
+    {_, Time} = calendar:now_to_local_time(misc_timer:now()),
+    calendar:time_to_seconds(Time).
+
+%% 判断今天星期几 
+get_week_day() ->
+    get_date().
+
+%% 1970.1.1 为星期四
+get_date() ->
+    %% 7.
+    Now = unixtime(),
+    WeekDay = ((((Now + ?TIME_ZONE_SECONDS) rem ?ONE_WEEK_SECONDS) div ?ONE_DAY_SECONDS) + 4) rem 7,
+    if
+        WeekDay =:= 0 -> 
+            7;
+        true -> 
+            WeekDay
+    end.
+
+get_hour() ->
+    ((unixtime() + ?TIME_ZONE_SECONDS) rem ?ONE_DAY_SECONDS) div ?ONE_HOUR_SECONDS.
+
+get_minute() ->
+    ((unixtime() + ?TIME_ZONE_SECONDS) rem ?ONE_HOUR_SECONDS) div ?ONE_MINITE_SECONDS.
+
+%% 获取当前天数
+get_day() ->
+    Now = unixtime(),
+    get_day(Now).
+
+%% 获取当前天数
+get_day(Now) ->
+    {{_Year, _Month, Day}, _Time} = seconds_to_localtime(Now),
+    Day.
+
+%% 获取当前月
+get_month() ->
+    get_month(unixtime()).
+
+%% 获取当前月
+get_month(Now) ->
+    {{_Year, Month, _Day}, _Time} = seconds_to_localtime(Now),
+    Month.
+
+%%获取上一周的开始时间和结束时间
+get_pre_week_duringtime() ->
+    OrealTime = calendar:datetime_to_gregorian_seconds({{1970,1,1}, {0,0,0}}),
+    {Year, Month, Day} = date(),
+    CurrentTime = calendar:datetime_to_gregorian_seconds(
+                    {{Year,Month,Day}, {0,0,0}}
+                   ) - OrealTime - 8 * 60 * 60,%%从1970开始时间值
+    WeekDay = calendar:day_of_the_week(Year,Month,Day),
+    Day1 = 
+        case WeekDay of %%上周的时间
+            1 -> 7;
+            2 -> 7+1;
+            3 -> 7+2;
+            4 -> 7+3;
+            5 -> 7+4;
+            6 -> 7+5;
+            7 -> 7+6
+        end,
+    StartTime = CurrentTime - Day1*24*60*60,
+    EndTime = StartTime + 7 * 24 * 60 * 60,
+    {StartTime, EndTime}.
+	
+%%获取本周的开始时间和结束时间
+get_this_week_duringtime() ->
+	OrealTime =  calendar:datetime_to_gregorian_seconds({{1970,1,1}, {0,0,0}}),
+	{Year,Month,Day} = date(),
+	CurrentTime = calendar:datetime_to_gregorian_seconds({{Year,Month,Day}, {0,0,0}})-OrealTime-8*60*60,%%从1970开始时间值
+	WeekDay = calendar:day_of_the_week(Year,Month,Day),
+	Day1 = 
+	case WeekDay of %%上周的时间
+		1 -> 0;
+		2 -> 1;
+		3 -> 2;
+		4 -> 3;
+		5 -> 4;
+		6 -> 5;
+		7 -> 6
+	end,
+	StartTime = CurrentTime - Day1*24*60*60,
+	EndTime = StartTime+7*24*60*60,
+	{StartTime,EndTime}.
+
+%% 传入日期时间，返回时间戳
+datetime_to_timestamp(undefined) ->
+    undefined;
+datetime_to_timestamp(all) ->
+    all;
+datetime_to_timestamp({Year, Month, Day, Hour, Min, Sec}) ->
+    datetime_to_timestamp(Year, Month, Day, Hour, Min, Sec).
+
+datetime_to_timestamp(Year, Month, Day, Hour, Min, Sec) ->
+    OrealTime =  calendar:datetime_to_gregorian_seconds({{1970,1,1}, {0,0,0}}),
+    ZeroSecs = calendar:datetime_to_gregorian_seconds({{Year, Month, Day}, {Hour, Min, Sec}}),
+    ZeroSecs - OrealTime - ?TIME_ZONE_SECONDS.
+
+%% 传入时间戳，返回日期时间
+timestamp_to_datetime(Timestamp) ->
+    seconds_to_localtime(Timestamp).
+    %% io_lib:format("~4..0w-~2..0w-~2..0w ~2..0w:~2..0w:~2..0w", 
+    %%               [YY, MM, DD, Hour, Min, Sec]). 
+
+%% 日期叠加
+datetime_plus({Year, Month, Day, Hour, Min, Sec}, {DY, DM, DD, DH, DMin, DS}) ->
+    Delta = DD * ?ONE_DAY_SECONDS + DH * ?ONE_HOUR_SECONDS + DMin * ?ONE_MINITE_SECONDS + DS,
+    TempMon = Month + DM,
+    RMon = (TempMon - 1) rem 12 + 1,
+    CYear = (TempMon - 1) div 12,
+    EndTime = datetime_to_timestamp(Year + DY + CYear, RMon, Day, Hour, Min, Sec) + Delta,
+    timestamp_to_datetime(EndTime).
+    
+%% 以e=2.718281828459L为底的对数
+%% lnx(X) ->
+%%     math:log10(X) / math:log10(?E).
+check_same_day(Timestamp)->
+    NDay = (unixtime() + 8 * 3600) div 86400,
+    ODay = (Timestamp+8*3600) div 86400,
+    NDay =:= ODay.
+
+current() -> 
     [{timer, {Now, _}}] = ets:lookup(ets_timer, timer),
     Now.
 
@@ -32,7 +285,8 @@ now_seconds()->
     lists:concat([MegaSecs, Secs]).
 
 cpu_time() -> 
-    [{timer, {_, Wallclock_Time_Since_Last_Call}}] = ets:lookup(ets_timer, timer),
+    [{timer, {_, Wallclock_Time_Since_Last_Call}}] = 
+        ets:lookup(ets_timer, timer),
     Wallclock_Time_Since_Last_Call.
 
 info() ->

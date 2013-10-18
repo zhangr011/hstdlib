@@ -12,17 +12,17 @@
 %% -include("define_logger.hrl").
 
 %% -include("record.hrl").
--include_lib("leshulib/include/language.hrl").
--include_lib("leshulib/include/define_goods.hrl").
--include_lib("leshulib/include/define_dungeon.hrl").
--include_lib("leshulib/include/define_skill.hrl").
--include_lib("leshulib/include/define_player.hrl").
--include_lib("leshulib/include/define_manor.hrl").
--include_lib("leshulib/include/define_answer.hrl").
--include_lib("leshulib/include/define_scene.hrl").
--include_lib("leshulib/include/define_battle.hrl").
--include_lib("leshulib/include/define_team.hrl").
--include_lib("stdlib/include/ms_transform.hrl"). 
+%% -include_lib("leshulib/include/language.hrl").
+%% -include_lib("leshulib/include/define_goods.hrl").
+%% -include_lib("leshulib/include/define_dungeon.hrl").
+%% -include_lib("leshulib/include/define_skill.hrl").
+%% -include_lib("leshulib/include/define_player.hrl").
+%% -include_lib("leshulib/include/define_manor.hrl").
+%% -include_lib("leshulib/include/define_answer.hrl").
+%% -include_lib("leshulib/include/define_scene.hrl").
+%% -include_lib("leshulib/include/define_battle.hrl").
+%% -include_lib("leshulib/include/define_team.hrl").
+%% -include_lib("stdlib/include/ms_transform.hrl"). 
 
 %% 数据库分库列表
 %% -define(DB_LIST,

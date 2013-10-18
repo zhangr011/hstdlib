@@ -7,7 +7,7 @@
 
 -export([set/1, get/0]).
 
--include_lib("leshulib/include/define_logger.hrl").
+-include("define_logger.hrl").
 
 -define(LOGMODULE, "error_logger").
 

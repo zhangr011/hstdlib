@@ -11,7 +11,7 @@
 -define(HEADER_PATH, "../include/").
 -define(INFO_RANGE, 1000).
 
--include_lib("leshulib/include/define_logger.hrl").
+-include("define_logger.hrl").
 
 -export([start/0]).
 

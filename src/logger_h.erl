@@ -7,7 +7,7 @@
 
 -behaviour(gen_event).
 
--include_lib("leshulib/include/define_logger.hrl").
+-include("define_logger.hrl").
 
 %% gen_event callbacks
 -export([init/1, handle_event/2, handle_call/2, handle_info/2, terminate/2,
@@ -25,12 +25,12 @@
 %%          Other
 %%----------------------------------------------------------------------
 init(File) ->
-	misc:write_monitor_pid(self(),?MODULE, {}),
+    misc:write_monitor_pid(self(),?MODULE, {}),
     case file:open(File, [append, raw]) of
-		{ok, Fd} ->
-	    	{ok, #state{fd = Fd, file = File}};
-		Error ->
-	    	Error
+        {ok, Fd} ->
+            {ok, #state{fd = Fd, file = File}};
+        Error ->
+            Error
     end.
 
 %%----------------------------------------------------------------------
@@ -82,7 +82,7 @@ handle_info(_Info, State) ->
 %% Returns: any
 %%----------------------------------------------------------------------
 terminate(_Reason, _State) ->
-	misc:delete_monitor_pid(self()),
+    misc:delete_monitor_pid(self()),
     ok.
 
 code_change(_OldVsn, State, _Extra) ->
@@ -95,7 +95,7 @@ reopen_log() ->
 %%% Internal functions
 %%%----------------------------------------------------------------------
 
-% Copied from erlang_logger_file_h.erl
+                                                % Copied from erlang_logger_file_h.erl
 write_event(Fd, {Time, {error, _GL, {Pid, Format, Args}}}) ->
     T = write_time(Time),
     case catch io_lib:format(add_node(Format,Pid), Args) of
@@ -202,4 +202,4 @@ rotate_log(Filename) ->
 	{error, _Reason} ->
 	    ok
     end.
-	    
+
