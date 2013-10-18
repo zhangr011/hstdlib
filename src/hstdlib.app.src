@@ -1,0 +1,12 @@
+{application, hstdlib,
+ [
+  {description, ""},
+  {vsn, "1"},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib
+                 ]},
+  {mod, { hstdlib_app, []}},
+  {env, []}
+ ]}.
