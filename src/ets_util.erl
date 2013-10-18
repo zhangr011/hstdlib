@@ -1,5 +1,7 @@
 -module(ets_util).
 
+-include("define_logger.hrl").
+
 -export(
    [
     lookup_one/2,
@@ -27,7 +29,6 @@
     tab2list/1
    ]
   ).
-
 
 %% -----------------------------------------------------------------
 %% 通用函数
@@ -250,3 +251,4 @@ is_exist(Table) ->
     end.        
 tab2list(Table) ->
     ets:tab2list(Table).
+
