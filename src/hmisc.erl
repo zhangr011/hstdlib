@@ -74,15 +74,20 @@ unregister(global, Name) ->
 
 is_process_alive(Pid) ->    
     try 
-        if is_pid(Pid) ->
+        if
+            is_pid(Pid) ->
                 case rpc:call(node(Pid), erlang, is_process_alive, [Pid]) of
-                    {badrpc, _Reason}  -> false;
-                    Res -> Res
+                    {badrpc, _Reason} ->
+                        false;
+                    Res ->
+                        Res
                 end;
-           true -> false
+           true ->
+                false
         end
     catch 
-        _:_ -> false
+        _:_ ->
+            false
     end.
 
 one_to_two(One) ->

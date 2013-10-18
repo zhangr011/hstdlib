@@ -81,7 +81,7 @@ handle_cast(_Msg, State) ->
 %% --------------------------------------------------------------------
 handle_info({event, clock}, State) ->
     %% {_Total_Wallclock_Time, Wallclock_Time_Since_Last_Call}= statistics(wall_clock),
-    {_Total_Run_Time, Time_Since_Last_Call} = statistics(runtime),
+    {_Total_Run_Time, Time_Since_Last_Call} = erlang:statistics(runtime),
     ets:insert(ets_timer, {timer, {erlang:now(), Time_Since_Last_Call}}),
     erlang:send_after(?CLOCK, self(), {event, clock}),
     {noreply, State};

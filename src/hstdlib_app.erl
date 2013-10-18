@@ -10,7 +10,7 @@
 %% ===================================================================
 
 start(_StartType, _StartArgs) ->
-    ets:new(ets_timer, [set, protected, named_table]),
+    ets:new(ets_timer, [set, public, named_table]),
     hstdlib_sup:start_link().
 
 stop(_State) ->
