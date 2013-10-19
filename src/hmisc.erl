@@ -37,10 +37,24 @@
          write_monitor_pid/3,
          delete_monitor_pid/1,
          to_bool/1,
-         to_binary/1,
-         f2s/1
+         f2s/1,
+         to_tuple/1
         ]).
-
+-export([is_string/1,
+         is_string/2,
+         random/2,
+         subatom/2,
+         int_to_hex/1,
+         remove_string_black/1,
+         max/1,
+         max/2,
+         write_binary/2,
+         bool_to_int/1,
+         choose_second_value/1,
+         filter_undefined/1,
+         cal_binary_1_count/1,
+         re_escape/1
+        ]).
 %%
 %% API Functions
 %%
@@ -1346,73 +1360,78 @@ make_sure_list(List, Where) ->
 
 
 compile_base_data(Table, ModName, IDPoses) ->
-	ModNameString = util:term_to_string(ModName),
-	HeadString = 
-		"-module("++ModNameString++").
+    ModNameString = util:term_to_string(ModName),
+    HeadString = 
+        "-module("++ModNameString++").
 		-compile(export_all).
 		",
-	BaseDataList = db_base:select_all(Table, "*", []),
-	ContentString = 
-	lists:foldl(fun(BaseData0, PreString) ->
-						FunChange = 
-							fun(Field) ->
-									 if is_integer(Field) -> Field; 
-										true -> 
-											case util:bitstring_to_term(Field) of
-												undefined ->
-													Field;
-												Term ->
-													Term
-											end
-									 end
-							end,
-						BaseData = [FunChange(Item)||Item <- BaseData0],
-						Base =list_to_tuple([Table|BaseData]),
-						BaseString = util:term_to_string(Base),
-						IDs = [element(Pos, Base)||Pos<-IDPoses],
-						IDList0 = lists:foldl(
-                                    fun(ID, PreString2)->
-                                            IdList = 
-                                                if erlang:is_integer(ID) ->
-                                                        integer_to_list(ID);
-                                                   true ->
-                                                        ID
-                                                end,
-                                            PreString2 ++ "," ++ IdList
-                                    end, [], IDs),
-						[_|IDList] = IDList0,
-						PreString ++ 
-							"get(" ++ 
-							IDList ++ 
-							") ->" ++ 
-							BaseString ++
-							";
-							"
-				end
-				, "", BaseDataList),
-	
-	_List0 = [",_"||_Pos<-IDPoses],
-	[_|_List] = lists:flatten(_List0),
-	ErrorString = "get("++_List++") -> undefined.
+    BaseDataList = db_base:select_all(Table, "*", []),
+    ContentString = 
+	lists:foldl(
+          fun(BaseData0, PreString) ->
+                  FunChange = 
+                      fun(Field) ->
+                              if
+                                  is_integer(Field) ->
+                                      Field; 
+                                  true -> 
+                                      case bitstring_to_term(Field) of
+                                          undefined ->
+                                              Field;
+                                          Term ->
+                                              Term
+                                      end
+                              end
+                      end,
+                  BaseData = [FunChange(Item)||Item <- BaseData0],
+                  Base =list_to_tuple([Table|BaseData]),
+                  BaseString = util:term_to_string(Base),
+                  IDs = [element(Pos, Base)||Pos<-IDPoses],
+                  IDList0 = 
+                      lists:foldl(
+                        fun(ID, PreString2)->
+                                IdList = 
+                                    if erlang:is_integer(ID) ->
+                                            integer_to_list(ID);
+                                       true ->
+                                            ID
+                                    end,
+                                PreString2 ++ "," ++ IdList
+                        end, [], IDs),
+                  [_|IDList] = IDList0,
+                  PreString ++ 
+                      "get(" ++ 
+                      IDList ++ 
+                      ") ->" ++ 
+                      BaseString ++
+                      ";
+						      "
+          end
+          , "", BaseDataList),
+
+    _List0 = [",_"||_Pos<-IDPoses],
+    [_|_List] = lists:flatten(_List0),
+    ErrorString = "get("++_List++") -> undefined.
 	",
 	FinalString = HeadString++ContentString++ErrorString,
-	%% io:format("string=~s~n",[FinalString]),
-	try
+    %% io:format("string=~s~n",[FinalString]),
+    try
         {Mod,Code} = dynamic_compile:from_string(FinalString),
         code:load_binary(Mod, ModNameString++".erl", Code)
     catch
-        Type:Error -> ?ERROR_MSG("Error compiling (~p): ~p~n", [Type, Error])
+        Type:Error -> 
+            ?ERROR_MSG("Error compiling (~p): ~p~n", [Type, Error])
     end,
-	ok.
+    ok.
 
 %% 注册函数
 register_fun(Fun, Times, Key) ->
-	case get({register_fun, Key}) of
-		[_|_] = RegisteredFuns ->
-			put({register_fun, Key}, [{Fun, Times}|RegisteredFuns]);
-		_ ->
-			put({register_fun, Key}, [{Fun, Times}])
-	end.
+    case get({register_fun, Key}) of
+        [_|_] = RegisteredFuns ->
+            put({register_fun, Key}, [{Fun, Times}|RegisteredFuns]);
+        _ ->
+            put({register_fun, Key}, [{Fun, Times}])
+    end.
 
 
 %% 返回两个中较大的数
@@ -1456,7 +1475,7 @@ sorted_scequence_minus(List) ->
     SortedList = lists:sort(List),
     [{DelayToMinus, _Pid} | _Tail] = SortedList,
     MinusFunc = fun({Delay, Pid}) ->
-                    {Delay - DelayToMinus, Pid}
+                        {Delay - DelayToMinus, Pid}
             end,
     {DelayToMinus, lists:map(MinusFunc, SortedList)}.
 
