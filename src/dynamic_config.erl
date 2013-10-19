@@ -1,6 +1,7 @@
 %% Author: T400
 %% Created: 2011-7-22
 %% Description: TODO: Add description to dynamic_config
+
 -module(dynamic_config).
 
 %%
@@ -41,19 +42,24 @@ config_src() ->
                    {get_tcp_listener_port, []},
 
                    {get_db_config, [db_admin], ";"},
-                   %% {get_db_config, [db_center], ";"},
+                   {get_db_config, [db_center], ";"},
                    {get_db_config, [db_base], ";"},
                    {get_db_config, [db_game], ";"},
                    {get_db_config, [db_log]},
+                   %% {get_db_config, [db_game_slave], ";"},
+                   %% {get_db_config, [db_log_slave]},        
 
                    {get_db_type, [db_admin], ";"},
-                   %% {get_db_type, [db_center], ";"},
+                   {get_db_type, [db_center], ";"},
                    {get_db_type, [db_base], ";"},
                    {get_db_type, [db_game], ";"},
                    {get_db_type, [db_log]},
+                   %% {get_db_type, [db_game_slave], ";"},
+                   %% {get_db_type, [db_log_slave]},          
 
                    {get_gateway_node, []},
                    {get_service_wait_time, []},
+                   {get_scene_here, []},
                    {get_global_mod_here, []},
                    {get_can_gmcmd, []},
                    {get_data_words_version,[]},
@@ -62,6 +68,7 @@ config_src() ->
                    {get_server_no, []},
                    {get_one_server_no, []},
                    {get_server_start_time, []},
+                   {get_max_id, []},
                    {get_stat_db, []},
                    {get_platform_name, []},
                    {get_client_platform_name, []},
@@ -87,10 +94,10 @@ config_src() ->
 
                          case P of 
                              [] ->
-                                 Config_value = util:term_to_string(erlang:apply(config_app, F, [])),
+                                 Config_value = hmisc:term_to_string(erlang:apply(config_app, F, [])),
                                  lists:concat([F, '()->', Config_value, End, '\t\n']);
                              [P1] ->
-                                 Config_value = util:term_to_string(erlang:apply(config_app, F, [P1])),
+                                 Config_value = hmisc:term_to_string(erlang:apply(config_app, F, [P1])),
                                  lists:concat([F, '(', P1 ,')->', Config_value, End, '\t\n'])
                          end
                      catch
@@ -103,10 +110,10 @@ config_src() ->
     ["dynamic_config",
      "-module(config). 
      -compile(export_all). "
-    ++ lists:concat(Funs)
-++ lists:concat(Funcs_scene_virtual)
-++ lists:concat(Funcs_infant_ctrl)
-].
+     ++ lists:concat(Funs)
+     ++ lists:concat(Funcs_scene_virtual)
+     ++ lists:concat(Funcs_infant_ctrl)
+    ].
 
 get_scene_virtual() ->
     Scene_virtual_ids = config_app:get_scene_virtual(),
@@ -117,7 +124,7 @@ get_scene_virtual() ->
              end,
              Scene_virtual_ids),             
     Funs ++ [lists:concat(['get_scene_virtual_number(_)->0.\t\n'])]
-        ++ [lists:concat(['get_scene_virtual()->', util:term_to_string(Scene_virtual_ids),'.\t\n'])].
+        ++ [lists:concat(['get_scene_virtual()->', hmisc:term_to_string(Scene_virtual_ids),'.\t\n'])].
 
 
 get_infant_ctrl() ->
@@ -125,6 +132,6 @@ get_infant_ctrl() ->
         1 ->
             [lists:concat(['get_infant_ctrl(_)->1.\t\n'])];
         _ ->
-            [lists:concat(['get_infant_ctrl(AccName)-> \t\n L3 = string:left(misc:to_list(AccName), 3),\t\n if (L3 == "llj") -> \t\n 1; \t\n    true -> 0 \t\n end. \t\n'])]
+            [lists:concat(['get_infant_ctrl(AccName)-> \t\n L3 = string:left(hmisc:to_list(AccName), 3),\t\n if (L3 == "llj") -> \t\n 1; \t\n    true -> 0 \t\n end. \t\n'])]
     end.
-
+        

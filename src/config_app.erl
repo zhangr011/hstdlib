@@ -11,7 +11,7 @@
          get_tcp_listener_port/0,
          get_db_config/1,
          get_db_type/1,
-         get_gateway_node/0,
+         %% get_gateway_node/0,
          get_service_wait_time/0,
          get_scene_here/0,
          get_global_mod_here/0,
@@ -34,8 +34,8 @@
          get_scene_virtual_number/1,
          get_scene_virtual/0,
          get_file_path/0,
-         get_gateway/0,
-         get_gateway_cookie/0,
+         %% get_gateway/0,
+         %% get_gateway_cookie/0,
          get_server_list_url/0
         ]).
 %% -compile(export_all).
@@ -57,7 +57,7 @@ get_log_level() ->
 %% 是否统计数据库访问情况 （1：开启; 0: 关闭）   
 get_stat_db() ->
     case application:get_env(stat_db) of
-	{ok, Stat_db} -> misc:to_integer(Stat_db);
+	{ok, Stat_db} -> hmisc:to_integer(Stat_db);
 	_ -> 0
     end.
 
@@ -65,7 +65,7 @@ get_stat_db() ->
 get_infant_ctrl() ->
     case application:get_env(infant_ctrl) of
         {ok, Mode} ->
-            misc:to_integer(Mode);
+            hmisc:to_integer(Mode);
         _ ->
             0
     end.
@@ -80,36 +80,39 @@ get_tcp_listener_ip() ->
                     lists:keyfind(ip, 1, Tcp_listener_ip),
                 [Ip]
             catch
-                _:_ -> exit({bad_config, {server, {tcp_listener_ip, config_error}}})
+                _:_ ->
+                    exit({bad_config,
+                          {server, {tcp_listener_ip, config_error}}})
             end;
- 	undefined -> throw(undefined)
+        undefined ->
+            throw(undefined)
     end.
 
-get_gateway() ->  
-    case application:get_env(gateway) of
-        {ok, false} ->
-            throw(undefined);
-        {ok, Gateway} -> 
-            try
-                {_, Node} = lists:keyfind(node, 1, Gateway),
-                {_, Cookie} = lists:keyfind(cookie, 1, Gateway),
-                {_, Ip}   = lists:keyfind(ip, 1, Gateway),
-                {_, Port} = lists:keyfind(port, 1, Gateway),
-                {_, Group}= lists:keyfind(group, 1, Gateway),
-                [misc:to_atom(Node), misc:to_atom(Cookie), Ip, Port, Group]
-            catch
-                _:_ -> exit({bad_config, {server, {gateway, config_error}}})
-            end;
-        undefined -> throw(undefined)
-    end.
+%% get_gateway() ->  
+%%     case application:get_env(gateway) of
+%%         {ok, false} ->
+%%             throw(undefined);
+%%         {ok, Gateway} -> 
+%%             try
+%%                 {_, Node} = lists:keyfind(node, 1, Gateway),
+%%                 {_, Cookie} = lists:keyfind(cookie, 1, Gateway),
+%%                 {_, Ip}   = lists:keyfind(ip, 1, Gateway),
+%%                 {_, Port} = lists:keyfind(port, 1, Gateway),
+%%                 {_, Group}= lists:keyfind(group, 1, Gateway),
+%%                 [hmisc:to_atom(Node), hmisc:to_atom(Cookie), Ip, Port, Group]
+%%             catch
+%%                 _:_ -> exit({bad_config, {server, {gateway, config_error}}})
+%%             end;
+%%         undefined -> throw(undefined)
+%%     end.
 
-get_gateway_node() ->
-    [Node, _,  _, _, _]= get_gateway(),
-    Node.
+%% get_gateway_node() ->
+%%     [Node, _,  _, _, _]= get_gateway(),
+%%     Node.
 
-get_gateway_cookie() ->
-    [_, Cookie,  _, _, _]= get_gateway(),
-    Cookie.
+%% get_gateway_cookie() ->
+%%     [_, Cookie,  _, _, _]= get_gateway(),
+%%     Cookie.
 
 get_tcp_listener_port() ->
     case application:get_env(tcp_listener_port) of
@@ -215,7 +218,7 @@ get_one_server_no() ->
     try
         Sn = get_server_no(),
         [H|_T] = string:tokens(Sn,","),
-        misc:to_integer(H)
+        hmisc:to_integer(H)
     catch 
         _:_ -> 1
     end.
@@ -308,7 +311,8 @@ get_card_key() ->
 %% 商城是否强制成 铜币购买
 get_shop_force_coin() ->
     case application:get_env(shop_force_coin) of
-	{ok, Force} -> misc:to_integer(Force);
+	{ok, Force} ->
+            hmisc:to_integer(Force);
 	_ -> 0
     end.
 

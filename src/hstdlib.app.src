@@ -1,7 +1,7 @@
 {application, hstdlib,
  [
   {description, ""},
-  {vsn, "1"},
+  {vsn, "1.0.0"},
   {modules, [
              hetsutil,
              hfile,

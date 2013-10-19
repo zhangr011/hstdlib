@@ -85,14 +85,17 @@ from_string(CodeStr, CompileFormsOptions) ->
 
     %% note: 'binary' is forced as an implicit option, whether it is provided or not.
     case compile:forms(Forms, CompileFormsOptions) of
-        {ok, ModuleName, CompiledCodeBinary} when is_binary(CompiledCodeBinary) ->
+        {ok, ModuleName, CompiledCodeBinary} 
+          when is_binary(CompiledCodeBinary) ->
             {ModuleName, CompiledCodeBinary};
-        {ok, ModuleName, CompiledCodeBinary, []} when is_binary(CompiledCodeBinary) ->  % empty warnings list
+        {ok, ModuleName, CompiledCodeBinary, []}
+          when is_binary(CompiledCodeBinary) ->
+            %% empty warnings list
             {ModuleName, CompiledCodeBinary};
         {ok, _ModuleName, _CompiledCodeBinary, Warnings} ->
             throw({?MODULE, warnings, Warnings});
-        Other ->
-            throw({?MODULE, compile_forms, Other})
+        _Other ->
+            throw({?MODULE, compile_forms, Forms})
     end.
 
 %%====================================================================

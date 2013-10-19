@@ -35,6 +35,8 @@
          write_system_info/3,
          delete_system_info/1,
          write_monitor_pid/3,
+         term_to_string/1,
+         string_to_term/1,
          delete_monitor_pid/1
         ]).
 
