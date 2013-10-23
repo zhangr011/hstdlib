@@ -1417,7 +1417,7 @@ compile_base_data(Table, ModName, IDPoses) ->
 	FinalString = HeadString++ContentString++ErrorString,
     %% io:format("string=~s~n",[FinalString]),
     try
-        {Mod,Code} = dynamic_compile:from_string(FinalString),
+        {Mod,Code} = hdynamic_compile:from_string(FinalString),
         code:load_binary(Mod, ModNameString++".erl", Code)
     catch
         Type:Error -> 
