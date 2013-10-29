@@ -39,6 +39,7 @@
          string_to_term/1,
          delete_monitor_pid/1,
          to_bool/1,
+         md5/1,
          f2s/1,
          to_tuple/1,
          is_string/1,
@@ -1162,11 +1163,6 @@ get_random_list(List, Num) ->
 %%         _ ->
 %%             ?MALE
 %%     end.
-
-%% @doc get server start time
-get_server_start_time() ->
-    {YY, MM, DD, HH, II, SS} = config:get_server_start_time(),
-    util:datetime_to_timestamp(YY, MM, DD, HH, II, SS).
 
 sleep(T, F) ->
     receive
