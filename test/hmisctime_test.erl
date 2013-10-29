@@ -15,7 +15,7 @@
 
 %% mod_timer_test
 mod_timer_test() ->
-    %%ok = application:start(hstdlib),
+    ok = application:start(hstdlib),
     %% 断言ets初始化成功
     ?assertNotEqual(ets:info(ets_timer), undefined),
     %% ?assertEqual(hmisc:is_process_alive(mod_timer), true),
@@ -24,6 +24,6 @@ mod_timer_test() ->
     Last = hmisctime:longunixtime(),
     timer:sleep(200),
     Next = hmisctime:longunixtime(),
-    ?assertNotEqual(Last, Next).
-    %%application:stop(hstdlib).
+    ?assertNotEqual(Last, Next),
+    application:stop(hstdlib).
 
