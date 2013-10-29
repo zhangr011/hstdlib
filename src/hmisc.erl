@@ -39,16 +39,21 @@
          string_to_term/1,
          delete_monitor_pid/1,
          to_bool/1,
+         md5/1,
          f2s/1,
          to_tuple/1,
          is_string/1,
          is_string/2,
          random/2,
+         rand/1,
+         rand/2,
+         shuffle/1,
          subatom/2,
          int_to_hex/1,
          remove_string_black/1,
          max/1,
          max/2,
+         atomize/1,
          write_binary/2,
          bool_to_int/1,
          choose_second_value/1,
@@ -789,8 +794,11 @@ hex(N) when N >= 10, N < 16 ->
 
 list_to_atom2(List) when is_list(List) ->
     case catch(list_to_existing_atom(List)) of
-        {'EXIT', _} -> erlang:list_to_atom(List);
-        Atom when is_atom(Atom) -> Atom
+        {'EXIT', _} ->
+            erlang:list_to_atom(List);
+        Atom
+          when is_atom(Atom) ->
+            Atom
     end.
 
 combine_lists(L1, L2) ->
@@ -948,7 +956,8 @@ get_elements_from_ets(Table, StartPos, EndPos, CurPos, CurKey, ElementsList, fal
 -define(UNICODE_CHINESE_END,   (9*16*16*16 + 15*16*16 + 10*16 + 5)).
 
 %% atomize a string
-atomize(Para) when is_binary(Para) ->
+atomize(Para)
+  when is_binary(Para) ->
     atomize(to_list(Para));
 atomize(Para) when is_list(Para) ->
     list_to_atom(string:to_lower(Para)).
@@ -1154,11 +1163,6 @@ get_random_list(List, Num) ->
 %%         _ ->
 %%             ?MALE
 %%     end.
-
-%% @doc get server start time
-get_server_start_time() ->
-    {YY, MM, DD, HH, II, SS} = config:get_server_start_time(),
-    util:datetime_to_timestamp(YY, MM, DD, HH, II, SS).
 
 sleep(T, F) ->
     receive

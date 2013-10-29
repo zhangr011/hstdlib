@@ -22,7 +22,11 @@
          get_day_second_passed/1,
          get_seconds_to_tomorrow/0,
          is_same_month/2,
-         is_same_date/2
+         is_same_date/2,
+         datetime_to_timestamp/1,
+         datetime_to_timestamp/6,
+         timestamp_to_datetime/1,
+         get_server_start_time/0
         ]).
 
 %% ====================================================================
@@ -281,4 +285,9 @@ cpu_time() ->
     [{timer, {_, Wallclock_Time_Since_Last_Call}}] = 
         ets:lookup(ets_timer, timer),
     Wallclock_Time_Since_Last_Call.
+
+%% @doc get server start time
+get_server_start_time() ->
+    {YY, MM, DD, HH, II, SS} = config:get_server_start_time(),
+    datetime_to_timestamp(YY, MM, DD, HH, II, SS).
 
