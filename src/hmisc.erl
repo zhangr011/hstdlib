@@ -28,6 +28,7 @@
          to_integer/1,
          to_float/1,
          to_binary/1,
+         to_utf8_string/1,
          ceil/1,
          floor/1,
          sleep/1,
