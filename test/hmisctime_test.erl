@@ -15,7 +15,7 @@
 
 %% mod_timer_test
 mod_timer_test() ->
-    ok = application:start(hstdlib),
+    %%ok = application:start(hstdlib),
     %% 断言ets初始化成功
     ?assertNotEqual(ets:info(ets_timer), undefined),
     %% ?assertEqual(hmisc:is_process_alive(mod_timer), true),
