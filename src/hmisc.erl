@@ -59,7 +59,8 @@
          choose_second_value/1,
          filter_undefined/1,
          cal_binary_1_count/1,
-         re_escape/1
+         re_escape/1,
+         new_session/0
         ]).
 %%
 %% API Functions
@@ -1917,4 +1918,9 @@ re_escape([H|T], Acc) ->
             re_escape(T, [H|Acc])
     end.
 
+%% @doc get random(1 - 2 ^ 31)
+%% @spec
+%% @end
+new_session() ->
+    rand(1, 2147483647).
 
