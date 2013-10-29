@@ -24,6 +24,6 @@ mod_timer_test() ->
     Last = hmisctime:longunixtime(),
     timer:sleep(200),
     Next = hmisctime:longunixtime(),
-    ?assertNotEqual(Last, Next),
-    application:stop(hstdlib).
+    ?assertNotEqual(Last, Next).
+    %%application:stop(hstdlib).
 

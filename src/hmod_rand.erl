@@ -3,7 +3,7 @@
 %%% @Created : 2011.06.01
 %%% @Description: 随机种子
 %%%-----------------------------------
--module(mod_rand).
+-module(hmod_rand).
 -behaviour(gen_server).
 -export([
          start_link/0,

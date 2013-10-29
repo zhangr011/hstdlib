@@ -1,8 +1,12 @@
 -module(hmisc_test).
 -compile(export_all).
 -include_lib("eunit/include/eunit.hrl").
-%%my_test() ->
-  %%  ok = application:start(hstdlib).
+
+
+rand_test() ->
+    ok = application:start(hstdlib),
+    ?assertEqual(1, hmisc:rand(1, 1)),
+    ?assertNotEqual(3, hmisc:rand(1, 2)).
 
 to_list_test()->
     ?assertEqual("99", hmisc:to_list(99)),
@@ -65,6 +69,7 @@ my_test() ->
     ?assertEqual(hmisc:cal_binary_1_count(10), 2),
     ?assertEqual(hmisc:re_escape(jgg), []),
     ?assertEqual(hmisc:re_escape("abcd"), "abcd"),
-    ?assertEqual(hmisc:re_escape("abc[cd]"), "abc\\[cd\\]").
+    ?assertEqual(hmisc:re_escape("abc[cd]"), "abc\\[cd\\]"),
+    application:stop(hstdlib).
     
     
