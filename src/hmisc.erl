@@ -20,49 +20,117 @@
          whereis_name/1,
          register/3,
          unregister/2,
+         register_player/2,
+         unregister_player/1,
          is_process_alive/1,
          player_process_name/1,
          create_process_name/2,
-         get_ip/1,
-         to_list/1,
-         to_integer/1,
-         to_float/1,
+
+         atomize/1,
+         int_to_hex/1,
          to_binary/1,
+         to_bool/1,
+         to_float/1,
+         to_integer/1,
+         to_list/1,
+         to_record/2,
+         to_tuple/1,
          to_utf8_string/1,
+
          ceil/1,
          floor/1,
+
          sleep/1,
-         get_process_info/7,
-         write_system_info/3,
-         delete_system_info/1,
-         write_monitor_pid/3,
-         term_to_string/1,
+         sleep/2,
+         format/2,
+
+         bitstring_to_term/1,
+         list_to_hex/1,
+         list_to_string/1,
+         list_to_term/1,
          string_to_term/1,
-         delete_monitor_pid/1,
-         to_bool/1,
-         md5/1,
+         term_to_bitstring/1,
+         term_to_string/1,
+         to_term_list/1,
+
+         combine_lists/2,
+         compare_record/3,
+         ele_tail/2,
          f2s/1,
-         to_tuple/1,
+         filter_list/3,
+         filter_undefined/1,
+         filter_zero/1,
+         get_chinese_count/1,
+         get_list/2,
+         get_fields_filter/3,
+         get_fields_modified/4,
+         get_pos_num_min_0/1,
+         get_pos_num_min_1/1,
+         get_random_list/2,
+         list_random/1,
+         lists_max/2,
+         lists_min/2,
+         lists_nth/2,
+         lists_nth_replace/3,
+         max/1,
+         max/2,
+         md5/1,
+         hmac_sha1/2,
          is_string/1,
          is_string/2,
+         keyfind_first/2,
+         odds/2,
+         odds_list/1,
          random/2,
          rand/1,
          rand/2,
+         rand/3,
+         rand1000/1,
+         rand_n/2,
+         remove_string_blank/1,
+         replace_all/4,
+         re_escape/1,
          shuffle/1,
          subatom/2,
-         int_to_hex/1,
-         remove_string_black/1,
-         max/1,
-         max/2,
-         atomize/1,
-         write_binary/2,
-         bool_to_int/1,
+         substr_utf8/2,
+         sorted_scequence_minus/1,
+         split_and_strip/3,
          choose_second_value/1,
-         filter_undefined/1,
          cal_binary_1_count/1,
-         re_escape/1,
+         gateway_client_process_name/1,
+         get_child_count/1,
+         get_child_message_queue_length/1,
+         get_heap/0,
+         get_heap/1,
+         get_ip/1,
+         get_max_num/2,
+         get_msg_queue/0,
+         get_memory/0,
+         get_memory/1,
+         get_processes/0,
+         get_process_info/7,
+         get_server_name/1,
+         get_type/2,
+         ip/1,
+         ip_str/1,
+         ip_list_to_binary/1,
+         log/5,
+         pg2_get_members/1,
+         implode/2,
+         explode/2,
+         explode/3,
+
+         compile_base_data/3,
+         write_binary/2,
+         write_list_to_binary/1,
+         write_system_info/3,
+         delete_system_info/1,
+         write_monitor_pid/3,
+         delete_monitor_pid/1,
+
          new_session/0
         ]).
+
 %%
 %% API Functions
 %%
@@ -72,9 +140,11 @@ whereis_name({local, Atom}) ->
 whereis_name({global, Atom}) ->
     global:whereis_name(Atom).
 
+%% @doc 注册一个原子
+%% @spec
+%% @end
 register(local, Name, Pid) ->
     erlang:register(Name, Pid);
-
 register(global, Name, Pid) ->
     %% 	case global:whereis_name(Name) of
     %% 		Pid0 when is_pid(Pid0) ->
@@ -83,15 +153,26 @@ register(global, Name, Pid) ->
     %% 			global:re_register_name(Name, Pid)
     %% 	end.
     global:re_register_name(Name, Pid);
-
 register(unique,Name,Pid) ->
     global:register_name(Name, Pid).
 
-
+%% @doc 取消一个原子的绑定
+%% @spec
+%% @end
 unregister(local, Name) ->
     erlang:unregister(Name);
 unregister(global, Name) ->
     global:unregister_name(Name).
+
+%% @doc 注册一个玩家进程，绑定到一个唯一的原子上
+register_player(PlayerId, Pid) ->
+    PlayerPidName = player_process_name(PlayerId),
+    hmisc:register(global, PlayerPidName, Pid).
+
+%% @doc 取消玩家进程的注册
+unregister_player(PlayerId) ->
+    PlayerPidName = player_process_name(PlayerId),
+    hmisc:unregister(global, PlayerPidName).
 
 is_process_alive(Pid) ->    
     try 
@@ -103,7 +184,7 @@ is_process_alive(Pid) ->
                     Res ->
                         Res
                 end;
-           true ->
+            true ->
                 false
         end
     catch 
@@ -111,34 +192,30 @@ is_process_alive(Pid) ->
             false
     end.
 
-one_to_two(One) ->
-    io_lib:format("~2..0B", [One]).
-
-%% @doc get the time's seconds for integer type
-%% @spec get_seconds(Time) -> integer() 
-
-
-
-rand_to_process(S) ->
-    %% Rand = random:uniform(?SEND_MSG),
-    lists:nth(1, S).
-
 player_process_name(PlayerId) ->
     to_atom(player_process_name2(PlayerId)).
 
-player_process_name2(PlayerId) when is_integer(PlayerId) or is_atom(PlayerId) ->
+player_process_name2(PlayerId) 
+  when is_integer(PlayerId) or is_atom(PlayerId) ->
     lists:concat([p_p_, PlayerId]);
-player_process_name2(PlayerId) when is_list(PlayerId) ->
+player_process_name2(PlayerId)
+  when is_list(PlayerId) ->
     lists:flatten(["p_p_"|PlayerId]);
-player_process_name2(PlayerId) when is_binary(PlayerId) ->
+player_process_name2(PlayerId)
+  when is_binary(PlayerId) ->
     lists:concat([p_p_, md5(PlayerId)]).
 
-gateway_client_process_name(ServerId) when is_integer(ServerId) or is_atom(ServerId) ->
+gateway_client_process_name(ServerId)
+  when is_integer(ServerId) or is_atom(ServerId) ->
     lists:concat([gateway_srv_,ServerId]).
 
 %% 创建进程名
 create_process_name(Prefix, List) ->
-    to_atom(lists:concat(lists:flatten([Prefix] ++ lists:map(fun(T) -> ['_', T] end, List)))).
+    to_atom(
+      lists:concat(
+        lists:flatten([Prefix] ++ lists:map(fun(T) ->
+                                                    ['_', T] end,
+                                            List)))).
 
 %% 获取来源IP 
 get_ip(Socket) ->
@@ -151,8 +228,11 @@ get_ip(Socket) ->
 
 ip_to_binary(Ip) ->
     case Ip of 
-        {A1,A2,A3,A4} -> 
-            [ integer_to_list(A1), "." , integer_to_list(A2), "." , integer_to_list(A3), "." , integer_to_list(A4) ];
+        {A1, A2, A3, A4} -> 
+            [ integer_to_list(A1), "." ,
+              integer_to_list(A2), "." ,
+              integer_to_list(A3), "." ,
+              integer_to_list(A4) ];
         _ ->
             "-"
     end.
@@ -185,7 +265,8 @@ get_child_message_queue_length(Atom) ->
             Child_list = supervisor:which_children(Atom),
             lists:map(
               fun({Name, Pid, _Type, [Class]})  when is_pid(Pid) ->
-                      {message_queue_len, Qlen} = erlang:process_info(Pid, message_queue_len),
+                      {message_queue_len, Qlen} = 
+                          erlang:process_info(Pid, message_queue_len),
                       {links, Links} = erlang:process_info(Pid, links),
                       {Name, Pid, Qlen, Class, length(Links)}
               end,
@@ -561,14 +642,11 @@ delete_monitor_pid(Pid) ->
 ip(Socket) ->
     {ok, {IP, _Port}} = inet:peername(Socket),
     {Ip0,Ip1,Ip2,Ip3} = IP,
-    list_to_binary(integer_to_list(Ip0)++"."++integer_to_list(Ip1)++"."++integer_to_list(Ip2)++"."++integer_to_list(Ip3)).
-
-
-%% @doc quick sort
-sort([]) ->
-    [];
-sort([H|T]) -> 
-    sort([X||X<-T,X<H]) ++ [H] ++ sort([X||X<-T,X>=H]).
+    list_to_binary(
+      integer_to_list(Ip0) ++ "." ++
+          integer_to_list(Ip1) ++ "." ++
+          integer_to_list(Ip2) ++ "." ++
+          integer_to_list(Ip3)).
 
 %% @doc convert float to string,  f2s(1.5678) -> 1.57
 f2s(N) when is_integer(N) ->
@@ -576,7 +654,6 @@ f2s(N) when is_integer(N) ->
 f2s(F) when is_float(F) ->
     [A] = io_lib:format("~.2f", [F]),
     A.
-
 
 %% @doc convert other type to atom
 to_atom(Msg) when is_atom(Msg) -> 
@@ -631,6 +708,10 @@ to_float(Msg)->
 
 %% @doc convert other type to integer
 -spec to_integer(Msg :: any()) -> integer().
+to_integer(true) ->
+    1;
+to_integer(false) ->
+    0;
 to_integer(Msg) when is_integer(Msg) -> 
     Msg;
 to_integer(Msg) when is_binary(Msg) ->
@@ -659,7 +740,7 @@ to_tuple(T) when is_tuple(T) -> T;
 to_tuple(T) -> {T}.
 
 %% @doc get data type {0=integer,1=list,2=atom,3=binary}
-get_type(DataValue,DataType)->
+get_type(DataValue, DataType)->
     case DataType of
         0 ->
             DataValue2 = binary_to_list(DataValue),
@@ -674,16 +755,27 @@ get_type(DataValue,DataType)->
     end.
 
 %% @spec is_string(List)-> yes|no|unicode  
-is_string([]) -> yes;
-is_string(List) -> is_string(List, non_unicode).
+is_string([]) ->
+    yes;
+is_string(List) ->
+    is_string(List, non_unicode).
+is_string([C|Rest], non_unicode)
+  when C >= 0, C =< 255 ->
+    is_string(Rest, non_unicode);
+is_string([C|Rest], _)
+  when C =< 65000 ->
+    is_string(Rest, unicode);
+is_string([], non_unicode) ->
+    yes;
+is_string([], unicode) ->
+    unicode;
+is_string(_, _) ->
+    no.
 
-is_string([C|Rest], non_unicode) when C >= 0, C =< 255 -> is_string(Rest, non_unicode);
-is_string([C|Rest], _) when C =< 65000 -> is_string(Rest, unicode);
-is_string([], non_unicode) -> yes;
-is_string([], unicode) -> unicode;
-is_string(_, _) -> no.
-
-
+%% @doc get a random integer between Min and Max
+random(Min, Max)->
+    Min2 = Min - 1,
+    random:uniform(Max - Min2) + Min2.
 
 %% @doc get random list
 list_random(List)->
@@ -691,15 +783,10 @@ list_random(List)->
         [] ->
             {};
         _ ->
-            RS			=	lists:nth(random:uniform(length(List)), List),
-            ListTail	= 	lists:delete(RS,List),
-            {RS,ListTail}
+            RS = lists:nth(random:uniform(length(List)), List),
+            ListTail = lists:delete(RS, List),
+            {RS, ListTail}
     end.
-
-%% @doc get a random integer between Min and Max
-random(Min,Max)->
-    Min2 = Min-1,
-    random:uniform(Max-Min2)+Min2.
 
 %% @doc 掷骰子
 %% random_dice(Face,Times)->
@@ -723,15 +810,17 @@ odds(Numerator, Denominator)->
 odds_list(List)->
     Sum = odds_list_sum(List),
     odds_list(List,Sum).
-odds_list([{Id,Odds}|List],Sum)->
+
+odds_list([{Id,Odds} | List], Sum)->
     case odds(Odds,Sum) of
         true ->
             Id;
         false ->
             odds_list(List,Sum-Odds)
     end.
+
 odds_list_sum(List)->
-    {_List1,List2} = lists:unzip(List),
+    {_List1, List2} = lists:unzip(List),
     lists:sum(List2).
 
 
@@ -779,6 +868,9 @@ sleep(Msec) ->
             true
     end.
 
+%% @doc md5 string
+%% @spec
+%% @end
 md5(S) ->        
     Md5_bin =  erlang:md5(S), 
     Md5_list = binary_to_list(Md5_bin), 
@@ -789,10 +881,11 @@ list_to_hex(L) ->
 
 int_to_hex(N) when N < 256 -> 
     [hex(N div 16), hex(N rem 16)]. 
+
 hex(N) when N < 10 -> 
-    $0+N; 
+    $0 + N; 
 hex(N) when N >= 10, N < 16 ->      
-    $a + (N-10).
+    $a + (N - 10).
 
 list_to_atom2(List) when is_list(List) ->
     case catch(list_to_existing_atom(List)) of
@@ -850,27 +943,32 @@ get_process_info_and_large_than_value(InfoName, Value) ->
 
 get_msg_queue() ->
     io:fwrite("process count:~p~n~p value is not 0 count:~p~nLists:~p~n", 
-              get_process_info_and_zero_value(message_queue_len) ).
+              get_process_info_and_zero_value(message_queue_len)).
 
 get_memory() ->
-    io:fwrite("process count:~p~n~p value is large than ~p count:~p~nLists:~p~n", 
-              get_process_info_and_large_than_value(memory, 1048576) ).
+    io:fwrite(
+      "process count:~p~n~p value is large than ~p count:~p~nLists:~p~n", 
+      get_process_info_and_large_than_value(memory, 1048576)).
 
 get_memory(Value) ->
-    io:fwrite("process count:~p~n~p value is large than ~p count:~p~nLists:~p~n", 
-              get_process_info_and_large_than_value(memory, Value) ).
+    io:fwrite(
+      "process count:~p~n~p value is large than ~p count:~p~nLists:~p~n", 
+      get_process_info_and_large_than_value(memory, Value)).
 
 get_heap() ->
-    io:fwrite("process count:~p~n~p value is large than ~p count:~p~nLists:~p~n", 
-              get_process_info_and_large_than_value(heap_size, 1048576) ).
+    io:fwrite(
+      "process count:~p~n~p value is large than ~p count:~p~nLists:~p~n", 
+      get_process_info_and_large_than_value(heap_size, 1048576)).
 
 get_heap(Value) ->
-    io:fwrite("process count:~p~n~p value is large than ~p count:~p~nLists:~p~n", 
-              get_process_info_and_large_than_value(heap_size, Value) ).
+    io:fwrite(
+      "process count:~p~n~p value is large than ~p count:~p~nLists:~p~n", 
+      get_process_info_and_large_than_value(heap_size, Value) ).
 
 get_processes() ->
-    io:fwrite("process count:~p~n~p value is large than ~p count:~p~nLists:~p~n",
-              get_process_info_and_large_than_value(memory, 0) ).
+    io:fwrite(
+      "process count:~p~n~p value is large than ~p count:~p~nLists:~p~n",
+      get_process_info_and_large_than_value(memory, 0) ).
 
 
 list_to_term(String) ->
@@ -905,8 +1003,8 @@ ip_str(IP) ->
             []
     end.
 
-%%去掉字符串空格
-remove_string_black(L) ->
+%% 去掉字符串空格
+remove_string_blank(L) ->
     F = fun(S) ->
                 if S == 32 -> [];
                    true -> S
@@ -914,44 +1012,6 @@ remove_string_black(L) ->
         end,
     Result = [F(lists:nth(I,L)) || I <- lists:seq(1,length(L))],
     lists:filter(fun(T) -> T =/= [] end,Result).
-
-%% 从ets表取的特定位置元素Num个元素，尽量只用在ordered_set表:(StartPos >= 1)
-get_elements_from_ets(Table, StartPos, Num) ->
-    case ets:first(Table) of
-        '$end_of_table' ->
-            [];
-        FirstKey ->
-            Size = ets:info(Table, size),
-            if
-                StartPos =< 0 orelse Num =< 0 orelse StartPos > Size->
-                    [];
-                true ->
-                    if
-                        StartPos + Num > Size -> EndPos = Size + 1;
-                        true -> EndPos = StartPos + Num
-                    end,
-                    get_elements_from_ets(Table, StartPos, EndPos, 1, FirstKey, [], false)
-            end
-    end.
-
-get_elements_from_ets(_Table, _StartPos, _EndPos, _CurPos, _CurKey, ElementsList, true) ->
-    ElementsList;
-get_elements_from_ets(Table, StartPos, EndPos, CurPos, CurKey, ElementsList, false) ->
-    NextPos = CurPos + 1,
-    NextKey = ets:next(Table, CurKey),
-    if
-        StartPos =< CurPos andalso CurPos =< EndPos ->
-            [CurElement | _] = ets:lookup(Table, CurKey),
-            NewElementsList = [CurElement | ElementsList],
-            if
-                NextPos >= EndPos ->
-                    get_elements_from_ets(Table, StartPos, EndPos, NextPos, NextKey, NewElementsList, true);
-                true ->
-                    get_elements_from_ets(Table, StartPos, EndPos, NextPos, NextKey, NewElementsList, false)
-            end;
-        true ->
-            get_elements_from_ets(Table, StartPos, EndPos, NextPos, NextKey, ElementsList, false)
-    end.
 
 %% 汉字unicode编码范围 0x4e00 - 0x9fa5
 -define(UNICODE_CHINESE_BEGIN, (4*16*16*16 + 14*16*16)).
@@ -966,8 +1026,9 @@ atomize(Para) when is_list(Para) ->
 
 %% 在List中的每两个元素之间插入一个分隔符
 implode(_S, [])->
-	[<<>>];
-implode(S, L) when is_list(L) ->
+    [<<>>];
+implode(S, L)
+  when is_list(L) ->
     implode(S, L, []).
 implode(_S, [H], NList) ->
     lists:reverse([to_list(H) | NList]);
@@ -987,10 +1048,12 @@ log(T, F, A, Mod, Line) ->
     {ok, Fl} = file:open("logs/error_log.txt", [write, append]),
     Format = list_to_binary("#" ++ T ++" ~s[~w:~w] " ++ F ++ "\r\n~n"),
     {{Y, M, D},{H, I, S}} = erlang:localtime(),
-    Date = list_to_binary([integer_to_list(Y),"-", integer_to_list(M), "-", 
-                           integer_to_list(D), " ", integer_to_list(H), ":", 
-                           integer_to_list(I), ":", integer_to_list(S)]),
-    io:format(Fl, unicode:characters_to_list(Format), [Date, Mod, Line] ++ A),
+    Date = list_to_binary(
+             [integer_to_list(Y),"-", integer_to_list(M), "-", 
+              integer_to_list(D), " ", integer_to_list(H), ":", 
+              integer_to_list(I), ":", integer_to_list(S)]),
+    io:format(
+      Fl, unicode:characters_to_list(Format), [Date, Mod, Line] ++ A),
     file:close(Fl).    
 
 
@@ -1001,9 +1064,8 @@ log(T, F, A, Mod, Line) ->
 
 hmac_sha1(Key, S) ->
     lists:flatten(
-      [io_lib:format("~2.16.0b", [N]) || N <- binary_to_list(crypto:sha_mac(Key, S))]).
-
-
+      [io_lib:format("~2.16.0b", [N]) 
+       || N <- binary_to_list(crypto:sha_mac(Key, S))]).
 
 %% 随机选择list中的一个元素
 rand([]) ->
@@ -1178,11 +1240,11 @@ get_list(X, F) ->
 
 %% 取列表Ele后面的元素
 ele_tail(_Ele, []) ->
-	[];
+    [];
 ele_tail(Ele, [Ele|T]) ->
-	T;
+    T;
 ele_tail(Ele, [_|T]) ->
-	ele_tail(Ele, T).
+    ele_tail(Ele, T).
 
 to_string(Integer) ->
     lists:flatten(io_lib:format("~p", [Integer])).
@@ -1207,7 +1269,7 @@ string_to_term(String) ->
             undefined
     end.
 
-%%将列表转换为string [a,b,c] -> "a,b,c"
+%% 将列表转换为string [a,b,c] -> "a,b,c"
 list_to_string(List) ->
     case List == [] orelse List == "" of
         true -> "";
@@ -1221,42 +1283,42 @@ list_to_string(List) ->
     end.
 
 %% term反序列化，bitstring转换为term，e.g., <<"[{a},1]">>  => [{a},1]
-bitstring_to_term(undefined) -> undefined;
+bitstring_to_term(undefined) -> 
+    undefined;
 bitstring_to_term(BitString) ->
     string_to_term(binary_to_list(BitString)).
 
-%%对list进行去重，排序
-%%Replicat 0不去重，1去重
-%%Sort 0不排序，1排序
-filter_list(List,Replicat,Sort) ->
-	if Replicat == 0 andalso Sort == 0 ->
-		   List;
-	   true ->
-		   if Replicat == 1 andalso Sort == 1 ->
-				  lists:usort(List);
-			  true ->
-				   if Sort == 1 ->
-						  lists:sort(List);
-					  true ->
-						  lists:reverse(filter_replicat(List,[]))
-				   end
-		   end
-	end.
+%% 对list进行去重，排序
+%% Replicat 0不去重，1去重
+%% Sort 0不排序，1排序
+filter_list(List, 1, 1) ->
+    %% 排序且去重复
+    lists:usort(List);
+filter_list(List, 1, 0) ->
+    %% 排序
+    lists:sort(List);
+filter_list(List, 0, 1) ->
+    %% 去重复
+    lists:reverse(filter_replicat(List, []));
+filter_list(List, _, _) ->
+    %% 什么都不处理
+    List.
 
-%%list去重
-filter_replicat([],List) ->
+%% list去重
+filter_replicat([], List) ->
 	List;
-filter_replicat([H|Rest],List) ->
-	Bool = lists:member(H, List),
-	List1 = 
-	if Bool == true ->
-		   [[]|List];
-	   true ->
-		   [H|List]
+filter_replicat([H|Rest], List) ->
+    List1 =
+	case lists:member(H, List) of
+            true ->
+                [[] | List];
+            false ->
+                [H | List]
 	end,
-	List2 = lists:filter(fun(T)-> T =/= [] end, List1),
-	filter_replicat(Rest,List2).
-
+    List2 = lists:filter(fun(T) ->
+                                 T =/= []
+                         end, List1),
+    filter_replicat(Rest, List2).
 
 %% ------------------------------------------------------
 %% desc   获取字符串汉字和非汉字的个数  
@@ -1264,49 +1326,59 @@ filter_replicat([H|Rest],List) ->
 %% return {汉字个数,非汉字个数}
 %% -------------------------------------------------------
 get_chinese_count(UTF8String)->
-	UnicodeList = unicode:characters_to_list(list_to_binary(UTF8String)),
-	Fun = fun(Num,{Sum})->
-				  case Num >= ?UNICODE_CHINESE_BEGIN  andalso  Num =< ?UNICODE_CHINESE_END of
-					  true->
-						  {Sum+1};
-					  false->
-						  {Sum}
-				  end
-		  end,
-	{ChineseCount} = lists:foldl(Fun, {0}, UnicodeList),
-	OtherCount = length(UnicodeList) - ChineseCount,
-	{ChineseCount,OtherCount}.
+    UnicodeList = unicode:characters_to_list(list_to_binary(UTF8String)),
+    Fun = fun(Num,{Sum})->
+                  case Num >= ?UNICODE_CHINESE_BEGIN andalso
+                      Num =< ?UNICODE_CHINESE_END of
+                      true ->
+                          {Sum + 1};
+                      false ->
+                          {Sum}
+                  end
+          end,
+    {ChineseCount} = lists:foldl(Fun, {0}, UnicodeList),
+    OtherCount = length(UnicodeList) - ChineseCount,
+    {ChineseCount,OtherCount}.
 
 %% 与lists:nth一样，不过多了0判断和N>length(List)情况的判断
-lists_nth(0, _) -> [];
-lists_nth(1, [H|_]) -> H;
-lists_nth(_, []) -> [];
-lists_nth(N, [_|T]) when N > 1 ->
+lists_nth(0, _) ->
+    [];
+lists_nth(1, [H|_]) ->
+    H;
+lists_nth(_, []) ->
+    [];
+lists_nth(N, [_|T]) 
+  when N > 1 ->
     lists_nth(N - 1, T).
 
 %% 替换列表第n个元素
 lists_nth_replace(N, L, V) ->
-	lists_nth_replace(N, L, V, []).
-lists_nth_replace(0, L, _V, _OH) -> L;
-lists_nth_replace(1, [_H|T], V, OH) -> recover(OH, [V|T]);
-lists_nth_replace(_, [], _V, OH) -> recover(OH, []);
-lists_nth_replace(N, [H|T], V, OH) when N > 1 ->
+    lists_nth_replace(N, L, V, []).
+lists_nth_replace(0, L, _V, _OH) ->
+    L;
+lists_nth_replace(1, [_H|T], V, OH) ->
+    recover(OH, [V|T]);
+lists_nth_replace(_, [], _V, OH) ->
+    recover(OH, []);
+lists_nth_replace(N, [H|T], V, OH)
+  when N > 1 ->
     lists_nth_replace(N - 1, T, V, [H|OH]).
 
 recover([], Hold) ->Hold;
 recover([H|T], Hold) ->
-	recover(T, [H|Hold]).
+    recover(T, [H|Hold]).
 
 %% 如果参数小于0，则取0
-get_pos_num(Num) ->
-	if Num < 0 ->
-		   0;
-	   true ->
-		   Num
-	end.
+get_pos_num_min_0(Num) ->
+    if
+        Num < 0 ->
+            0;
+        true ->
+            Num
+    end.
 
 %% 如果参数小于1，则取1
-get_pos_num2(Num) ->
+get_pos_num_min_1(Num) ->
 	if Num < 1 ->
 		   1;
 	   true ->
@@ -1314,23 +1386,15 @@ get_pos_num2(Num) ->
 	end.
 
 get_max_num(Num, Max) ->
-	if Num > Max ->
-		   Max;
-	   true ->
-		   Num
-	end.
-
-make_sure_list(List, Where) ->
-	if is_list(List) -> 
-		   List; 
-	   true ->
-		   ?ERROR_MSG("List=~p, Where=~p~n", [List, Where]),
-		   []
-	end.
-
+    if
+        Num > Max ->
+            Max;
+        true ->
+            Num
+    end.
 
 compile_base_data(Table, ModName, IDPoses) ->
-    ModNameString = util:term_to_string(ModName),
+    ModNameString = term_to_string(ModName),
     HeadString = 
         "-module("++ModNameString++").
 		-compile(export_all).
@@ -1395,14 +1459,13 @@ compile_base_data(Table, ModName, IDPoses) ->
     ok.
 
 %% 注册函数
-register_fun(Fun, Times, Key) ->
-    case get({register_fun, Key}) of
-        [_|_] = RegisteredFuns ->
-            put({register_fun, Key}, [{Fun, Times}|RegisteredFuns]);
-        _ ->
-            put({register_fun, Key}, [{Fun, Times}])
-    end.
-
+%% register_fun(Fun, Times, Key) ->
+%%     case get({register_fun, Key}) of
+%%         [_|_] = RegisteredFuns ->
+%%             put({register_fun, Key}, [{Fun, Times}|RegisteredFuns]);
+%%         _ ->
+%%             put({register_fun, Key}, [{Fun, Times}])
+%%     end.
 
 %% 返回两个中较大的数
 max(Arg1,Arg2) ->
@@ -1446,7 +1509,7 @@ sorted_scequence_minus(List) ->
     [{DelayToMinus, _Pid} | _Tail] = SortedList,
     MinusFunc = fun({Delay, Pid}) ->
                         {Delay - DelayToMinus, Pid}
-            end,
+                end,
     {DelayToMinus, lists:map(MinusFunc, SortedList)}.
 
 %% @spec
@@ -1571,7 +1634,6 @@ write_list_to_binary(ArgList) when is_list(ArgList) ->
       Pred :: fun((Elem :: T) -> boolean()),
       List :: [T],
       T :: term().
-
 keyfind_first(F, [H|T]) ->
     Res = F(H),
     if
@@ -1580,11 +1642,9 @@ keyfind_first(F, [H|T]) ->
         true ->
             keyfind_first(F, T)
     end;
-keyfind_first(F, []) when is_function(F, 1) -> [].
-
-%% 获取战斗中的唯一Id
-get_combat_uid() ->
-    mod_id_factory:get_auto_id().
+keyfind_first(F, []) 
+  when is_function(F, 1) ->
+    [].
 
 %% @doc 分解并去除字符两端的无用数据
 %% @spec
@@ -1759,25 +1819,17 @@ to_term_list(_other) ->
 %%     ?INFO_MSG("to_id_list unknown ids : ~w ~n",[_other]),
 %%     [].
 
-bool_to_int(true) ->
-    1;
-bool_to_int(false) ->
-    0;
-bool_to_int(_Other) ->
-    ?WARNING_MSG("unknown bool : ~w~n",[_Other]),
-    0.
-
-
 format(Content, Args) 
   when is_list(Args)->
-    NewArgs = lists:map(fun(Arg) ->
-                                if
-                                    is_binary(Arg) -> 
-                                        Arg;
-                                    true -> 
-                                        util:to_string(Arg)
-                                end
-                        end, Args),
+    NewArgs = 
+        lists:map(fun(Arg) ->
+                          if
+                              is_binary(Arg) -> 
+                                  Arg;
+                              true -> 
+                                  to_string(Arg)
+                          end
+                  end, Args),
     io_lib:format(Content, NewArgs).
 
 %% test_utf8() ->
@@ -1848,6 +1900,7 @@ filter_undefined(Value) ->
 lists_max(Func, List) 
   when is_function(Func) ->
     lists:foldl(Func, hd(List), tl(List)).   
+
 %%--------------------------------------------------------------------
 %% @doc 跟erlang的lists:min有点类似，但是加了自定义的Func函数来比较
 %% @spec
@@ -1890,16 +1943,21 @@ cal_binary_1_count(0, Res) ->
 cal_binary_1_count(N, Res) ->
     cal_binary_1_count(N bsr 1, Res+(N band 1)).
 
+%% @doc get_server_name
+%% @spec
+%% @end
 get_server_name(Sn) ->
     ServerNameList = 
-        case lib_syssetting:get_game_data(server_name_list, config:get_one_server_no()) of
+        case lib_syssetting:get_game_data(
+               server_name_list, config:get_one_server_no()) of
             List when is_list(List) ->
                 List;
             _ ->
                 []
         end,
     %%?DEBUG("~p~n", [ServerNameList]),
-    to_binary(proplists:get_value(to_integer(Sn), ServerNameList, "一将功成")).
+    to_binary(
+      proplists:get_value(to_integer(Sn), ServerNameList, "一将功成")).
 
 -define(RE_METACHARACTERS, "()[]{}\|*.+?:!$^<>=").
 
