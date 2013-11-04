@@ -20,6 +20,7 @@
          whereis_name/1,
          register/3,
          unregister/2,
+         whereis_player_pid/1,
          register_player/2,
          unregister_player/1,
          is_process_alive/1,
@@ -173,6 +174,25 @@ register_player(PlayerId, Pid) ->
 unregister_player(PlayerId) ->
     PlayerPidName = player_process_name(PlayerId),
     hmisc:unregister(global, PlayerPidName).
+
+%%
+%% API Functions
+%%
+%% get the pid of a registered name
+whereis_player_pid(PlayerId) -> 
+    PlayerProcessName = player_process_name(PlayerId),
+    case hmisc:whereis_name({global, PlayerProcessName}) of
+        Pid 
+          when is_pid(Pid) ->
+            case hmisc:is_process_alive(Pid) of
+                true ->
+                    Pid;
+                _ ->
+                    []
+            end;
+        _ ->
+            []
+    end.
 
 is_process_alive(Pid) ->    
     try 
