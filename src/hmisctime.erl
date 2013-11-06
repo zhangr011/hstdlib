@@ -18,14 +18,20 @@
          unixtime/0,
          longunixtime/0,
          seconds_to_localtime/1,
-         get_today_second_passed/0,
          get_day_second_passed/1,
          get_seconds_to_tomorrow/0,
-         is_same_month/2,
+         get_seconds_to_tomorrow_4/0,
+         get_today_second_passed/0,
+         get_timestamp_of_today_start/0,
+         get_timestamp_of_tomorrow_start/0,
+         get_timestamp_of_week_start/0,
          is_same_date/2,
+         is_same_month/2,
+         is_same_week/2,
          datetime_to_timestamp/1,
          datetime_to_timestamp/6,
          timestamp_to_datetime/1,
+         time_format/1,
          get_server_start_time/0
         ]).
 
@@ -36,6 +42,13 @@
 %% -----------------------------------------------------------------
 %% 根据1970年以来的秒数获得日期
 %% -----------------------------------------------------------------
+
+%% @doc get the time's seconds for integer type
+%% @spec get_seconds(Time) -> integer() 
+time_format(Now) -> 
+    {{Y,M,D},{H,MM,S}} = calendar:now_to_local_time(Now),
+    lists:concat([Y, "-", one_to_two(M), "-", one_to_two(D), " ", 
+                  one_to_two(H) , ":", one_to_two(MM), ":", one_to_two(S)]).
 
 %% 取得当前的unix时间戳，秒级
 unixtime() ->
@@ -290,4 +303,8 @@ cpu_time() ->
 get_server_start_time() ->
     {YY, MM, DD, HH, II, SS} = config:get_server_start_time(),
     datetime_to_timestamp(YY, MM, DD, HH, II, SS).
+
+%% time format
+one_to_two(One) ->
+    io_lib:format("~2..0B", [One]).
 
