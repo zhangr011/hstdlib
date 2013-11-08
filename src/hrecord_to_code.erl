@@ -8,7 +8,7 @@
 %%%			生成文件： "../temp/Table_field_short.php"
 %%%         生成文件： "../temp/clear_table.sql"
 %%%--------------------------------------
--module(record_to_code).
+-module(hrecord_to_code).
 
 %% %%
 %% %% Include files

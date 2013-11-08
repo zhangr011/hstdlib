@@ -37,7 +37,7 @@
 %%% -undef/-ifdef/-ifndef/-else/-endif
 %%% -file(File, Line)
 %%%-------------------------------------------------------------------
--module(dynamic_compile).
+-module(hdynamic_compile).
 
 %% API
 -export([from_string/1, from_string/2]).

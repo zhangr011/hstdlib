@@ -3,7 +3,7 @@
 %% 按照次序编译每项(解决编译顺序的问题)
 %% 其中mods也可以包含多个模块,当大于1个时,
 %% 可以启动多个process进行编译,从而提高编译速度.
--module(mmake).
+-module(hmmake).
 -export([all/1, all/2, files/2, files/3]).
 
 -include_lib("kernel/include/file.hrl").

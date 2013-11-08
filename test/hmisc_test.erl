@@ -1,8 +1,12 @@
 -module(hmisc_test).
 -compile(export_all).
 -include_lib("eunit/include/eunit.hrl").
-%%my_test() ->
-  %%  ok = application:start(hstdlib).
+
+
+rand_test() ->
+    ok = application:start(hstdlib),
+    ?assertEqual(1, hmisc:rand(1, 1)),
+    ?assertNotEqual(3, hmisc:rand(1, 2)).
 
 to_list_test()->
     ?assertEqual("99", hmisc:to_list(99)),
@@ -49,15 +53,15 @@ my_test() ->
     ?assertEqual(hmisc:floor(-0.7), -1),
     ?assertEqual(hmisc:subatom(success, 3), suc),
     ?assertEqual(hmisc:int_to_hex(10), "0a"),
-    ?assertEqual(hmisc:remove_string_black("abc s df"), "abcsdf"),
+    ?assertEqual(hmisc:remove_string_blank("abc s df"), "abcsdf"),
     ?assertEqual(hmisc:max(10,2), 10),
     ?assertEqual(hmisc:max([3,5,7,8,2]), 8),
     ?assertEqual(hmisc:write_binary(bin, <<123>>), <<123>>),
     ?assertEqual(hmisc:write_binary(bit, 1), <<1:1>>),
     ?assertEqual(hmisc:write_binary(byte, 123), <<123:8>>),
     ?assertEqual(hmisc:write_binary(int8, 36475), <<36475:8>>),
-    ?assertEqual(hmisc:bool_to_int(true), 1),
-    ?assertEqual(hmisc:bool_to_int(false), 0),
+    ?assertEqual(hmisc:to_integer(true), 1),
+    ?assertEqual(hmisc:to_integer(false), 0),
     ?assertEqual(hmisc:choose_second_value({1,2}), 2),
     ?assertEqual(hmisc:choose_second_value({1,1}), undefined),
     ?assertEqual(hmisc:filter_undefined(undefined), false),
@@ -65,6 +69,7 @@ my_test() ->
     ?assertEqual(hmisc:cal_binary_1_count(10), 2),
     ?assertEqual(hmisc:re_escape(jgg), []),
     ?assertEqual(hmisc:re_escape("abcd"), "abcd"),
-    ?assertEqual(hmisc:re_escape("abc[cd]"), "abc\\[cd\\]").
+    ?assertEqual(hmisc:re_escape("abc[cd]"), "abc\\[cd\\]"),
+    application:stop(hstdlib).
     
     

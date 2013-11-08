@@ -4,7 +4,7 @@
 %%% @Description: 将mysql数据表 转换成 erl record
 %%%            生成文件： "../include/table_to_record.hrl"
 %%%--------------------------------------
--module(table_to_record).
+-module(htable_to_record).
 
 %%
 %% Include files

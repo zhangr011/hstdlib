@@ -1,4 +1,4 @@
--module(sysinfo).
+-module(hsysinfo).
 -export([
          out/0,
          cnt/0,

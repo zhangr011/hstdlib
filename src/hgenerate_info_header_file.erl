@@ -5,7 +5,7 @@
 %%%               生成文件："../include/table_to_record.hrl"
 %%%--------------------------------------
 
--module(generate_info_header_file).
+-module(hgenerate_info_header_file).
 
 -define(CONFIG_FILE, "../config/server.app").
 -define(HEADER_PATH, "../include/").

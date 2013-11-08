@@ -3,7 +3,7 @@
 %%% Created : 2010-08-30
 %%%----------------------------------------------------------------------
 
--module(loglevel).
+-module(hloglevel).
 
 -export([set/1, get/0]).
 
@@ -22,7 +22,7 @@
                     ]).
 
 get() ->
-    Level = logger:get(),
+    Level = hlogger:get(),
     case lists:keysearch(Level, 1, ?LOG_LEVELS) of
         {value, Result} -> Result;
         _ -> erlang:error({no_such_loglevel, Level})
@@ -32,7 +32,7 @@ set(LogLevel) when is_atom(LogLevel) ->
     set(level_to_integer(LogLevel));
 set(Loglevel) when is_integer(Loglevel) ->
     try
-        {Mod,Code} = dynamic_compile:from_string(logger_src(Loglevel)),
+        {Mod,Code} = hdynamic_compile:from_string(logger_src(Loglevel)),
         code:load_binary(Mod, ?LOGMODULE ++ ".erl", Code)
     catch
         Type:Error -> ?CRITICAL_MSG("Error compiling logger (~p): ~p~n", [Type, Error])

@@ -62,13 +62,13 @@ writelines_new(FileName, BinList) when is_binary(BinList) ->
 writelines_new(FileName, InfoList) ->
     BinOldInfoList = 
         try
-            misc:to_binary(readlines(FileName))
+            hmisc:to_binary(readlines(FileName))
         catch
             _:_ ->
                 io:format("new file ~ts ~n", [FileName]),
                 []
         end,
-    BinInfoList = misc:to_binary(InfoList),
+    BinInfoList = hmisc:to_binary(InfoList),
     if
         BinInfoList =/= BinOldInfoList ->
             io:format("rewrite file ~ts ...~n", [FileName]),

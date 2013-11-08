@@ -3,7 +3,7 @@
 %%% Created : 2010-10-17
 %%% Description: 时间生成器
 %%%----------------------------------------------------------------------
--module(mod_timer).
+-module(hmod_timer).
 
 -behaviour(gen_server).
 

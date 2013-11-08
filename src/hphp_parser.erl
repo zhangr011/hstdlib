@@ -2,7 +2,7 @@
 %% Modified: bisonwu
 %% Description: Takes a serialized php object and turns it into an erlang data structure
 
--module(php_parser).
+-module(hphp_parser).
 
 %%
 %% Include files

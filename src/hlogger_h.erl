@@ -3,7 +3,7 @@
 %%% Created : 2010-08-20
 %%%----------------------------------------------------------------------
 
--module(logger_h).
+-module(hlogger_h).
 
 -behaviour(gen_event).
 
