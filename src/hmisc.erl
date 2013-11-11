@@ -88,6 +88,7 @@
          rand/3,
          rand1000/1,
          rand_n/2,
+         record_modified/2,
          remove_string_blank/1,
          replace_all/4,
          re_escape/1,
@@ -1707,6 +1708,44 @@ split_and_strip(String, SplitChar, StripChar) ->
 %%             {fail, ?INFO_OPERATE_TOO_FREQUENTLY}
 %%     end.
 
+-spec record_modified(R1, R2) -> false | tuple() when
+      R1 :: tuple(),
+      R2 :: tuple().
+record_modified(R1, R2)
+  when is_tuple(R1) andalso
+       is_tuple(R2) ->
+    L1 = tuple_to_list(R1),
+    L2 = tuple_to_list(R2),
+    [H1 | Rest1] = L1,
+    [H2 | Rest2] = L2,
+    if
+        is_atom(H1) andalso 
+        is_atom(H2) andalso
+        H1 =:= H2 -> 
+            ZipList = lists:zip(Rest1, Rest2),
+            RetList = lists:map(fun({A, B}) ->
+                                        if
+                                            A =:= B ->
+                                                undefined;
+                                            true ->
+                                                B
+                                        end
+                                end, ZipList),
+            case lists:any(
+                   fun(A) ->
+                           A =/= undefined
+                   end, RetList) of
+                true ->
+                    list_to_tuple([H1 | RetList]);
+                false ->
+                    []
+            end;
+        true -> 
+            []
+    end;
+record_modified(R1, R2) ->
+    [].
+
 %% 比较两个Record值 Func返回True则返回Record中相应位置的B值，否则返回undefined
 -spec compare_record(R1, R2, Pred) -> false | tuple() when
       Pred :: fun(({E1 :: T1, E2 :: T2}) -> boolean()),
@@ -1804,7 +1843,6 @@ to_utf8_string(String)
 to_utf8_string(_Other) ->
     ?DEBUG("to_utf8_string unknow sting : ~w ~n",[_Other]),
     [].
-
 
 
 to_term_list(Ids)

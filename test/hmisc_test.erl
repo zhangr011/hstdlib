@@ -38,6 +38,15 @@ to_bool_test() ->
     ?assertEqual(true, hmisc:to_bool(binary_to_list(<<"1234">>))),
     ?assertEqual(true, hmisc:to_bool(true)),
     ?assertEqual(false, hmisc:to_bool(false)).
+
+compare_record_test() ->
+    ?assertEqual({player, 2}, 
+                 hmisc:record_modified({player, 1},
+                                       {player, 2})),
+    ?assertEqual([], 
+                 hmisc:record_modified({player, 1},
+                                       {player, 1})).
+
 my_test() ->
     ?assertEqual(hmisc:to_tuple({1,2,3}), {1,2,3}),
     ?assertEqual(hmisc:to_tuple([1,2,3]), {[1,2,3]}),
@@ -71,5 +80,4 @@ my_test() ->
     ?assertEqual(hmisc:re_escape("abcd"), "abcd"),
     ?assertEqual(hmisc:re_escape("abc[cd]"), "abc\\[cd\\]"),
     application:stop(hstdlib).
-    
-    
+
