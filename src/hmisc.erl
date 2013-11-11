@@ -37,6 +37,7 @@
          to_record/2,
          to_tuple/1,
          to_utf8_string/1,
+         to_atom/1,
 
          ceil/1,
          floor/1,

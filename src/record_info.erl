@@ -9,6 +9,7 @@
 
 -export([
          parse_transform/2,
+         get_record_field/2,
          pr/2]).
 %% 剥离lager的record pr代码
 %% 还有一个实现是https://github.com/hio/erlang-record_info
@@ -80,3 +81,26 @@ pr(Record, Module) when is_tuple(Record), is_atom(element(1, Record)) ->
     end;
 pr(Record, _) ->
     Record.
+
+get_record_field(RecordName, Module) ->
+    try Module:module_info(attributes) of
+        Attris ->
+            case lists:keyfind(record_info, 1, Attris) of
+                false ->
+                    [];
+                {record_info, Records} ->
+                    case lists:keyfind(RecordName, 1, Records) of
+                        false ->
+                            [];
+                        {_RecordName, Fields}->
+                            Fields
+                    end
+            end
+    catch error:undef ->
+            error_logger:error_msg("undef record : ~w~n",[RecordName]),
+            [];
+          _:R ->
+            error_logger:error_msg("get_record_field_failed!! Name:~w, R:~w~n",[RecordName, R]),
+            []
+
+    end.
