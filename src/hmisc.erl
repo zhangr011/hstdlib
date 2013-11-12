@@ -88,6 +88,7 @@
          rand/2,
          rand/3,
          rand1000/1,
+         rand10000/1,
          rand_n/2,
          record_modified/2,
          remove_string_blank/1,
@@ -1091,33 +1092,9 @@ hmac_sha1(Key, S) ->
 
 %% 随机选择list中的一个元素
 rand([]) ->
-    0;
-rand([{_, _} | _] = List) 
-  when is_list(List) ->
-    {NewList, FullPower} = 
-        lists:foldl(
-          fun({IKey, IPower}, {OldList, OldPower}) ->
-                  %% 叠加权重处理
-                  {[{IKey, OldPower + IPower} | OldList], 
-                   OldPower + IPower}
-          end, {[], 0}, List),
-    Rand = rand(0, FullPower),
-    %% 过滤掉小于随机值的数据
-    case lists:filter(fun({_, Weight}) ->
-                              if
-                                  Weight >= Rand ->
-                                      true;
-                                  true ->
-                                      false
-                              end
-                      end, lists:reverse(NewList)) of
-        [] ->
-            %% 没有了，那么返回0
-            0;
-        [{Key, _} | _Tail] ->
-            %% 获取到第一个元素
-            Key
-    end;
+    [];
+rand([{_, _} | _] = List) ->
+    rand(List, full);
 rand(List)
   when is_list(List) ->
     %% 先随机获取一个位置，然后返回对一个的元素
@@ -1130,8 +1107,42 @@ shuffle(L) ->
     List2 = lists:keysort(1, List1), 
     [E || {_, E} <- List2]. 
 
-
 %% 产生一个介于Min到Max之间的随机整数
+%% @doc 以10000为基准进行随机选择
+%% @spec
+%% @end
+rand([{_, _} | _] = List, Base) ->
+    {NewList, FullPower} = 
+        lists:foldl(
+          fun({IKey, IPower}, {OldList, OldPower}) ->
+                  %% 叠加权重处理
+                  {[{IKey, OldPower + IPower} | OldList], 
+                   OldPower + IPower}
+          end, {[], 0}, List),
+    CalcBase = 
+        if
+            Base =:= full ->
+                FullPower;
+            true ->
+                Base
+        end,
+    Rand = rand(1, CalcBase),
+    %% 过滤掉小于随机值的数据
+    case lists:filter(fun({_, Weight}) ->
+                              if
+                                  Weight >= Rand ->
+                                      true;
+                                  true ->
+                                      false
+                              end
+                      end, NewList) of
+        [] ->
+            %% 没有了，那么返回0
+            [];
+        [{Key, _} | _Tail] ->
+            %% 获取到第一个元素
+            Key
+    end;
 rand(Same, Same) -> 
     Same;
 rand(Min, Max) ->
@@ -1511,7 +1522,7 @@ max(NumList) ->
                 end, 0, NumList).
                      
 rand1000(Rate) ->
-    R = util:rand(1,1000),
+    R = rand(1,1000),
     if
         Rate > R-> 
             false;
@@ -1519,6 +1530,14 @@ rand1000(Rate) ->
             true
     end.
 
+rand10000(Rate) ->
+    R = rand(1, 10000),
+    if
+        Rate > R ->
+            false;
+        true ->
+            true
+    end.
 
 %% @spec
 %% sorted_scequence_minus([{1, Pid1}, {5, Pid2}, {7, Pid3}]) ->
