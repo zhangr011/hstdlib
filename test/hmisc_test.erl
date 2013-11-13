@@ -39,6 +39,11 @@ to_bool_test() ->
     ?assertEqual(true, hmisc:to_bool(true)),
     ?assertEqual(false, hmisc:to_bool(false)).
 
+add_in_max_test() ->
+    ?assertEqual(50, hmisc:add_in_max(50, 10, 40)),
+    ?assertEqual(50, hmisc:add_in_max(50, 10, 50)),
+    ?assertEqual(50, hmisc:add_in_max(40, 15, 50)).
+
 compare_record_test() ->
     ?assertEqual({player, 2}, 
                  hmisc:record_modified({player, 1},

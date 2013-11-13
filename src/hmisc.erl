@@ -39,6 +39,7 @@
          to_utf8_string/1,
          to_atom/1,
 
+         add_in_max/3,
          ceil/1,
          floor/1,
 
@@ -846,6 +847,18 @@ odds_list_sum(List)->
     {_List1, List2} = lists:unzip(List),
     lists:sum(List2).
 
+add_in_max(Old, Delta, Max) ->
+    if
+        Old >= Max ->
+            Old;
+        true ->
+            if
+                Old + Delta >= Max ->
+                    Max;
+                true ->
+                    Old + Delta
+            end
+    end.
 
 %% @doc 取整 大于X的最小整数
 ceil(X) ->
