@@ -33,7 +33,10 @@
          timestamp_to_datetime/1,
          time_format/1,
          get_server_start_time/0,
-         get_today_current_second/0
+         get_today_current_second/0,
+         get_week_day/0,
+         get_midnight_seconds/1,
+         get_days_passed/2
         ]).
 
 %% ====================================================================
