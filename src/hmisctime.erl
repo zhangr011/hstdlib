@@ -164,7 +164,7 @@ get_days_passed(Seconds1, Seconds2) ->
 
 %% 获取从午夜到现在的秒数
 get_today_current_second() ->
-    {_, Time} = calendar:now_to_local_time(misc_timer:now()),
+    {_, Time} = calendar:now_to_local_time(current()),
     calendar:time_to_seconds(Time).
 
 %% 判断今天星期几 
