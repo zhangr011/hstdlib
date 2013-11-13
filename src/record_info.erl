@@ -96,7 +96,8 @@ get_record_field(RecordName, Module) ->
                             Fields
                     end
             end
-    catch error:undef ->
+    catch 
+        error:undef ->
             error_logger:error_msg("undef record : ~w~n",[RecordName]),
             [];
           _:R ->
