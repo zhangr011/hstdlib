@@ -32,7 +32,11 @@
          datetime_to_timestamp/6,
          timestamp_to_datetime/1,
          time_format/1,
-         get_server_start_time/0
+         get_server_start_time/0,
+         get_today_current_second/0,
+         get_week_day/0,
+         get_midnight_seconds/1,
+         get_days_passed/2
         ]).
 
 %% ====================================================================
@@ -163,7 +167,7 @@ get_days_passed(Seconds1, Seconds2) ->
 
 %% 获取从午夜到现在的秒数
 get_today_current_second() ->
-    {_, Time} = calendar:now_to_local_time(misc_timer:now()),
+    {_, Time} = calendar:now_to_local_time(current()),
     calendar:time_to_seconds(Time).
 
 %% 判断今天星期几 
