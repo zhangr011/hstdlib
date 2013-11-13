@@ -32,7 +32,8 @@
          datetime_to_timestamp/6,
          timestamp_to_datetime/1,
          time_format/1,
-         get_server_start_time/0
+         get_server_start_time/0,
+         get_today_current_second/0
         ]).
 
 %% ====================================================================
