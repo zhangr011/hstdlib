@@ -70,6 +70,8 @@
          get_pos_num_min_0/1,
          get_pos_num_min_1/1,
          get_random_list/2,
+         get_value_pair_tuple/2,
+         get_value_pair_tuple/3,
          list_random/1,
          lists_max/2,
          lists_min/2,
@@ -1866,6 +1868,19 @@ get_fields_filter(Record, Fields, Func)
     lists:filter(fun({_Field, Value}) ->
                          Func(Value)
                  end, ZipList).
+
+%% @doc 获取一个列表中对应关键字的值
+%% @spec
+%% @end
+get_value_pair_tuple(Key, List) ->
+    get_value_pair_tuple(Key, List, undefined).
+get_value_pair_tuple(Key, List, V) ->
+    case lists:keyfind(Key, 1, List) of
+        {_, Val} ->
+            Val;
+        _ ->
+            V
+    end.
 
 to_utf8_string(String)
   when is_list(String) ->
