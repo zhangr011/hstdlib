@@ -84,6 +84,7 @@
          is_string/1,
          is_string/2,
          keyfind_first/2,
+         replace/3,
          odds/2,
          odds_list/1,
          random/2,
@@ -1701,6 +1702,21 @@ keyfind_first(F, [H|T]) ->
 keyfind_first(F, []) 
   when is_function(F, 1) ->
     [].
+
+-spec replace(Key, NewKey, List) -> list() when
+      Key :: term(),
+      NewKey :: term(),
+      List :: [T],
+      T :: term().
+replace(Key, NewKey, List) ->
+    lists:map(fun(K) ->
+                      if
+                          K =:= Key -> 
+                              NewKey;
+                          true -> 
+                              K
+                      end
+              end, List).
 
 %% @doc 分解并去除字符两端的无用数据
 %% @spec
