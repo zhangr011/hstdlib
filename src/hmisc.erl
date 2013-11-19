@@ -1767,16 +1767,19 @@ record_modified(R1, R2)
        is_tuple(R2) ->
     L1 = tuple_to_list(R1),
     L2 = tuple_to_list(R2),
-    record_modified([], L1, L2).
-record_modified([], [Head | Rest1], [Head | Rest2]) ->
-    record_modified([Head], Rest1, Rest2);
-record_modified(ResultList, [Head | Rest1], [Head | Rest2]) ->
-    record_modified([undefined | ResultList], Rest1, Rest2);
-record_modified(ResultList, [H1 | Rest1], [H2 | Rest2]) ->
-    record_modified([H2 | ResultList], Rest1, Rest2);
-record_modified(ResultList, [], []) ->
+    record_modified({[], false}, L1, L2).
+record_modified({[], InFlag}, [Head | Rest1], [Head | Rest2]) ->
+    record_modified({[Head], InFlag}, Rest1, Rest2);
+record_modified({ResultList, InFlag}, [Head | Rest1], [Head | Rest2]) ->
+    record_modified({[undefined | ResultList], InFlag}, Rest1, Rest2);
+record_modified({ResultList, _}, [_H1 | Rest1], [H2 | Rest2]) ->
+    record_modified({[H2 | ResultList], true}, Rest1, Rest2);
+record_modified({ResultList, true}, [], []) ->
     %% 将最终的结果反转成 record
     list_to_tuple(lists:reverse(ResultList));
+record_modified({_, false}, [], []) ->
+    %% 没有任何变更
+    [];
 record_modified(RList, L1, L2) ->
     ?DEBUG("record compare failed: ~p~n~p~n~p~n", [RList, L1, L2]),
     [].
