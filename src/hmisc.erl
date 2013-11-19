@@ -1769,7 +1769,7 @@ record_modified(R1, R2)
     L2 = tuple_to_list(R2),
     record_modified([], L1, L2).
 record_modified([], [Head | Rest1], [Head | Rest2]) ->
-    record_modified([Head | ResultList], Rest1, Rest2);
+    record_modified([Head], Rest1, Rest2);
 record_modified(ResultList, [Head | Rest1], [Head | Rest2]) ->
     record_modified([undefined | ResultList], Rest1, Rest2);
 record_modified(ResultList, [H1 | Rest1], [H2 | Rest2]) ->
