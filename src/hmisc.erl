@@ -57,7 +57,7 @@
          to_term_list/1,
 
          combine_lists/2,
-         compare_record/3,
+         %% compare_record/3,
          ele_tail/2,
          f2s/1,
          filter_list/3,
@@ -1751,65 +1751,49 @@ record_modified(R1, R2)
        is_tuple(R2) ->
     L1 = tuple_to_list(R1),
     L2 = tuple_to_list(R2),
-    [H1 | Rest1] = L1,
-    [H2 | Rest2] = L2,
-    if
-        is_atom(H1) andalso 
-        is_atom(H2) andalso
-        H1 =:= H2 -> 
-            ZipList = lists:zip(Rest1, Rest2),
-            RetList = lists:map(fun({A, B}) ->
-                                        if
-                                            A =:= B ->
-                                                undefined;
-                                            true ->
-                                                B
-                                        end
-                                end, ZipList),
-            case lists:any(
-                   fun(A) ->
-                           A =/= undefined
-                   end, RetList) of
-                true ->
-                    list_to_tuple([H1 | RetList]);
-                false ->
-                    []
-            end;
-        true -> 
-            []
-    end;
-record_modified(R1, R2) ->
+    record_modified([], L1, L2).
+record_modified([], [Head | Rest1], [Head | Rest2]) ->
+    record_modified([Head | ResultList], Rest1, Rest2);
+record_modified(ResultList, [Head | Rest1], [Head | Rest2]) ->
+    record_modified([undefined | ResultList], Rest1, Rest2);
+record_modified(ResultList, [H1 | Rest1], [H2 | Rest2]) ->
+    record_modified([H2 | ResultList], Rest1, Rest2);
+record_modified(ResultList, [], []) ->
+    %% 将最终的结果反转成 record
+    list_to_tuple(lists:reverse(ResultList));
+record_modified(RList, L1, L2) ->
+    ?DEBUG("record compare failed: ~p~n~p~n~p~n", [RList, L1, L2]),
     [].
 
 %% 比较两个Record值 Func返回True则返回Record中相应位置的B值，否则返回undefined
--spec compare_record(R1, R2, Pred) -> false | tuple() when
-      Pred :: fun(({E1 :: T1, E2 :: T2}) -> boolean()),
-      R1 :: tuple(),
-      R2 :: tuple(),
-      T1 :: term(),
-      T2 :: term().
-compare_record(R1, R2, Func) 
-  when is_tuple(R1) andalso 
-       is_tuple(R2) andalso
-       is_function(Func)->
-    L1 = tuple_to_list(R1),
-    L2 = tuple_to_list(R2),
-    [H1 | Rest1] = L1,
-    [H2 | Rest2] = L2,
-    if
-        is_atom(H1) andalso 
-        is_atom(H2) andalso
-        H1 =:= H2 -> 
-            ZipList = lists:zip(Rest1, Rest2),
-            RetList = lists:map(fun({A, B}) ->
-                                        Func({A, B})
-                                end, ZipList),
-            list_to_tuple([H1 | RetList]);
-        true -> 
-            false
-    end;
-compare_record(_R1, _R2, _F) ->
-    false.
+%% -spec compare_record(R1, R2, Pred) -> false | tuple() when
+%%       Pred :: fun(({E1 :: T1, E2 :: T2}) -> boolean()),
+%%       R1 :: tuple(),
+%%       R2 :: tuple(),
+%%       T1 :: term(),
+%%       T2 :: term().
+%% compare_record(R1, R2, Func) 
+%%   when is_tuple(R1) andalso 
+%%        is_tuple(R2) andalso
+%%        is_function(Func)->
+%%     L1 = tuple_to_list(R1),
+%%     L2 = tuple_to_list(R2),
+%%     [H1 | Rest1] = L1,
+%%     [H2 | Rest2] = L2,
+%%     if
+%%         is_atom(H1) andalso 
+%%         is_atom(H2) andalso
+%%         H1 =:= H2 -> 
+%%             ZipList = lists:zip(Rest1, Rest2),
+%%             RetList = lists:map(fun({A, B}) ->
+%%                                         Func({A, B})
+%%                                 end, ZipList),
+%%             list_to_tuple([H1 | RetList]);
+%%         true -> 
+%%             false
+%%     end;
+%% compare_record(_R1, _R2, _F) ->
+%%     false.
 
 -spec get_fields_modified(R1, R2, FieldsList, ListModified) -> list() when
       R1 :: tuple(),
