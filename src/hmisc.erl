@@ -118,7 +118,6 @@
          get_processes/0,
          get_process_info/7,
          get_server_name/1,
-         get_type/2,
          ip/1,
          ip_str/1,
          ip_list_to_binary/1,
@@ -765,21 +764,6 @@ to_bool(_D) ->
 %% @doc convert other type to tuple
 to_tuple(T) when is_tuple(T) -> T;
 to_tuple(T) -> {T}.
-
-%% @doc get data type {0=integer,1=list,2=atom,3=binary}
-get_type(DataValue, DataType)->
-    case DataType of
-        0 ->
-            DataValue2 = binary_to_list(DataValue),
-            list_to_integer(DataValue2);
-        1 ->
-            binary_to_list(DataValue);
-        2 ->
-            DataValue2 = binary_to_list(DataValue),
-            list_to_atom(DataValue2);
-        3 -> 
-            DataValue
-    end.
 
 %% @spec is_string(List)-> yes|no|unicode  
 is_string([]) ->
@@ -2072,13 +2056,15 @@ re_escape([H|T], Acc) ->
 new_session() ->
     rand(1, 2147483647).
 
-%% @doc interface
+%% =============== Internal functions ================
+
+%% @doc 
 %% @spec
 %% @end
 inner_select(Base, Current, [{Item, Power} | Tail]) ->
     NewCurrent = Current + Power,
     if
-        NewCurrent > Base ->
+        NewCurrent >= Base ->
             Item;
         true ->
             inner_select(Base, NewCurrent, Tail)

@@ -24,9 +24,9 @@ rand_test() ->
      ?assertEqual(1, hmisc:rand(1, 1)),
      ?assertNotEqual(3, hmisc:rand(1, 2)),
      ?assertEqual(0, Other),
-     ?assertEqual(true, One > 90 andalso One < 110),
-     ?assertEqual(true, Two > 180 andalso Two < 220),
-     ?assertEqual(true, Three > 270 andalso Three < 330)
+     ?assertMatch(V when V >= 90 andalso V =< 110, One),
+     ?assertMatch(V when V >= 180 andalso V =< 220, Two),
+     ?assertMatch(V when V >= 270 andalso V =< 330, Three)
     ].
 
 to_list_test()->
