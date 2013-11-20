@@ -1127,38 +1127,18 @@ shuffle(L) ->
 %% @doc 以10000为基准进行随机选择
 %% @spec
 %% @end
-rand([{_, _} | _] = List, Base) ->
-    {NewList, FullPower} = 
+rand([{_, _} | _] = List, full) ->
+    FullPower = 
         lists:foldl(
-          fun({IKey, IPower}, {OldList, OldPower}) ->
+          fun({_IKey, IPower}, OldPower) ->
                   %% 叠加权重处理
-                  {[{IKey, OldPower + IPower} | OldList], 
-                   OldPower + IPower}
-          end, {[], 0}, List),
-    CalcBase = 
-        if
-            Base =:= full ->
-                FullPower;
-            true ->
-                Base
-        end,
-    Rand = rand(1, CalcBase),
+                  OldPower + IPower
+          end, 0, List),
+    rand(List, FullPower);
+rand([{_, _} | _] = List, Base) ->
+    Rand = rand(1, Base),
     %% 过滤掉小于随机值的数据
-    case lists:filter(fun({_, Weight}) ->
-                              if
-                                  Weight >= Rand ->
-                                      true;
-                                  true ->
-                                      false
-                              end
-                      end, NewList) of
-        [] ->
-            %% 没有了，那么返回0
-            [];
-        [{Key, _} | _Tail] ->
-            %% 获取到第一个元素
-            Key
-    end;
+    inner_select(Rand, 0, List);
 rand(Same, Same) -> 
     Same;
 rand(Min, Max) ->
@@ -2091,4 +2071,19 @@ re_escape([H|T], Acc) ->
 %% @end
 new_session() ->
     rand(1, 2147483647).
+
+%% @doc interface
+%% @spec
+%% @end
+inner_select(Base, Current, [{Item, Power} | Tail]) ->
+    NewCurrent = Current + Power,
+    if
+        NewCurrent > Base ->
+            Item;
+        true ->
+            inner_select(Base, NewCurrent, Tail)
+    end;
+inner_select(_, _, []) ->
+    %% 到最后还没有选取到，那么返回 []
+    [].
 
