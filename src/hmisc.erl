@@ -28,6 +28,7 @@
          create_process_name/2,
 
          atomize/1,
+         apply_string/1,
          int_to_hex/1,
          to_binary/1,
          to_bool/1,
@@ -1046,6 +1047,20 @@ atomize(Para)
     atomize(to_list(Para));
 atomize(Para) when is_list(Para) ->
     list_to_atom(string:to_lower(Para)).
+
+apply_string(RawData) ->
+    {M, F, A} = inner_split_out_mfa(RawData),
+    apply(M, F, A).
+
+inner_split_out_mfa(MFA) ->
+    {match, [M, F, A]} = 
+        re:run(MFA, "(.*):(.*)\\((.*)\\)$",
+               [{capture, [1, 2, 3], list}, ungreedy]),
+    {list_to_atom(M), list_to_atom(F), inner_args_to_terms(A)}.
+inner_args_to_terms(RawArgs) ->
+    {ok, Toks, _Line} = erl_scan:string("[" ++ RawArgs ++ "]. ", 1),
+    {ok, Args} = erl_parse:parse_term(Toks),
+    Args.
 
 %% 在List中的每两个元素之间插入一个分隔符
 implode(_S, [])->

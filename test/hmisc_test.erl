@@ -120,6 +120,11 @@ my_test() ->
      ?assertEqual(hmisc:re_escape("abc[cd]"), "abc\\[cd\\]")
     ].
 
+call_string_test() ->
+    [
+     ?assertEqual(1, hmisc:apply_string("hmisc:rand(1,1)"))
+    ].
+
 stop_test() ->
     application:stop(hstdlib).
 
