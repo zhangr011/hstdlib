@@ -121,6 +121,37 @@ my_test() ->
      ?assertEqual(hmisc:re_escape("abc[cd]"), "abc\\[cd\\]")
     ].
 
+-record(player,{
+          id,
+          sex,
+          vip,
+          gold,
+          guild_name,
+          guild_title,
+          nickname
+         }).
+
+get_change_test_() ->
+    [?_assertEqual(
+        [{vip,3}, {id,2}],
+        hmisc:get_change(
+          #player{
+             id=1,
+             sex=1,
+             vip=1,
+             gold=100,
+             guild_name="神",
+             guild_title="传说",
+             nickname = <<"acbc">>},
+          #player{
+             id=2,
+             sex=1,
+             vip=3,
+             gold=undefined,
+             guild_name="undefined",
+             guild_title= <<"undefined">>,
+             nickname = <<"acbc">> }, record_info(fields, player)))].
+
 stop_test() ->
     application:stop(hstdlib).
 
