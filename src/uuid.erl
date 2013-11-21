@@ -36,9 +36,9 @@
          get_parts/1, 
          to_binary/1, 
          is_uuid/1, 
-         get_next_uuid/0,
+         get_next_uuid/0
          %% test/0
-         uuid_test/0
+         %uuid_test/0
         ]).
 %%-import(random).
 
@@ -100,19 +100,19 @@ is_uuid(_) ->
 %%     io:format("Res:~w~n",[Res]),
 %%     io:format("Res:~w~n",[is_uuid("adfasdf")]).
 
-uuid_test() ->
-    UUID = v4(),
-    uuid_test(UUID, 10000),
-    ok.
+%% uuid_test() ->
+%%     UUID = v4(),
+%%     uuid_test(UUID, 10000),
+%%     ok.
 
-uuid_test(_UUID, 0) ->
-    uuid_test_done;
-uuid_test(UUID, N) ->
-    NextUUID = v4(),
-    if
-        UUID =:= NextUUID -> 
-            io:format("uuid is same uuid:~w~n",[UUID]),
-            error_same_uuid;
-        true -> 
-            uuid_test(UUID, N -1)
-    end.
+%% uuid_test(_UUID, 0) ->
+%%     uuid_test_done;
+%% uuid_test(UUID, N) ->
+%%     NextUUID = v4(),
+%%     if
+%%         UUID =:= NextUUID -> 
+%%             io:format("uuid is same uuid:~w~n",[UUID]),
+%%             error_same_uuid;
+%%         true -> 
+%%             uuid_test(UUID, N -1)
+%%     end.

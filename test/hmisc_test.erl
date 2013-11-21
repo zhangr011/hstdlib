@@ -24,6 +24,7 @@ rand_test() ->
      ?assertEqual(1, hmisc:rand(1, 1)),
      ?assertNotEqual(3, hmisc:rand(1, 2)),
      ?assertEqual(0, Other),
+     ?assertMatch(V when is_atom(V), hmisc:rand([[one, 1], [two, 2], [three, 3]])),
      ?assertMatch(V when V >= 90 andalso V =< 110, One),
      ?assertMatch(V when V >= 180 andalso V =< 220, Two),
      ?assertMatch(V when V >= 270 andalso V =< 330, Three)
@@ -124,6 +125,37 @@ call_string_test() ->
     [
      ?assertEqual(1, hmisc:apply_string("hmisc:rand(1,1)"))
     ].
+
+-record(player,{
+          id,
+          sex,
+          vip,
+          gold,
+          guild_name,
+          guild_title,
+          nickname
+         }).
+
+get_change_test_() ->
+    [?_assertEqual(
+        [{vip,3}, {id,2}],
+        hmisc:get_change(
+          #player{
+             id=1,
+             sex=1,
+             vip=1,
+             gold=100,
+             guild_name="神",
+             guild_title="传说",
+             nickname = <<"acbc">>},
+          #player{
+             id=2,
+             sex=1,
+             vip=3,
+             gold=undefined,
+             guild_name="undefined",
+             guild_title= <<"undefined">>,
+             nickname = <<"acbc">> }, record_info(fields, player)))].
 
 stop_test() ->
     application:stop(hstdlib).

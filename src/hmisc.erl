@@ -136,7 +136,10 @@
          write_monitor_pid/3,
          delete_monitor_pid/1,
 
-         new_session/0
+         new_session/0,
+         get_change/3,
+         load_base_data/3,
+         load_game_data/3
         ]).
 
 %%
@@ -1110,6 +1113,8 @@ rand([]) ->
     [];
 rand([{_, _} | _] = List) ->
     rand(List, full);
+rand([[_, _] | _] = List) ->
+    rand(List, full);
 rand(List)
   when is_list(List) ->
     %% 先随机获取一个位置，然后返回对一个的元素
@@ -1134,6 +1139,14 @@ rand([{_, _} | _] = List, full) ->
                   OldPower + IPower
           end, 0, List),
     rand(List, FullPower);
+rand([[_, _] | _] = List, full) ->
+    {NewList, FullPower} = 
+        lists:foldl(
+          fun([IKey, IPower], {Acc, OldPower}) ->
+                  %% 叠加权重处理
+                  {[{IKey, IPower}|Acc], OldPower + IPower}
+          end, {[], 0}, List),
+    rand(NewList, FullPower);
 rand([{_, _} | _] = List, Base) ->
     Rand = rand(1, Base),
     %% 过滤掉小于随机值的数据
@@ -2088,3 +2101,49 @@ inner_select(_, _, []) ->
     %% 到最后还没有选取到，那么返回 []
     [].
 
+
+get_change(Rec1, Rec2, FieldList) ->
+    [_|List1] = tuple_to_list(Rec1),
+    [_|List2] = tuple_to_list(Rec2),
+    get_change2(List1, List2, FieldList, []).
+
+get_change2([], [], [], Ans) ->
+    Ans;
+get_change2([H|L1], [H|L2], [_|FieldList], Ans) ->
+    get_change2(L1, L2, FieldList, Ans);
+get_change2([_|L1], [undefined|L2], [_|FieldList], Ans) ->
+    get_change2(L1, L2, FieldList, Ans);
+get_change2([_|L1], ["undefined"|L2], [_|FieldList], Ans) ->
+    get_change2(L1, L2, FieldList, Ans);
+get_change2([_|L1], [<<"undefined">>|L2], [_|FieldList], Ans) ->
+    get_change2(L1, L2, FieldList, Ans);
+get_change2([_|L1], [V2|L2], [Field|FieldList], Ans) ->
+    get_change2(L1, L2, FieldList, [{Field,V2}|Ans]).
+
+
+load_base_data(DbTable, EtsTable, HandleFun) ->
+    L = db_base:select_all(DbTable, "*", []),
+    ets_util:lock(EtsTable),
+    try
+        ets_util:truncate(EtsTable),
+        lists:foreach(fun(Info) ->
+                              RecInfo = HandleFun(Info),
+                              ets_util:insert(EtsTable, RecInfo)
+                      end, L)
+    catch _:R ->
+            ?WARNING_MSG("load ~p failed R:~w Stack: ~p~n",[DbTable, R, erlang:get_stacktrace()])
+    after
+        ets_util:unlock(EtsTable)
+    end,
+    ok.
+
+load_game_data(L, EtsTable, HandleFun) ->
+    try
+        lists:foreach(fun(Info) ->
+                              RecInfo = HandleFun(Info),
+                              ets_util:insert(EtsTable, RecInfo)
+                      end, L)
+    catch _:R ->
+            ?WARNING_MSG("insert ~p failed R:~w Stack: ~p~n",[EtsTable, R, erlang:get_stacktrace()])
+    end,
+    ok.
