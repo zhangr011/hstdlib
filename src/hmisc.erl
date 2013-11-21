@@ -1095,6 +1095,8 @@ rand([]) ->
     [];
 rand([{_, _} | _] = List) ->
     rand(List, full);
+rand([[_, _] | _] = List) ->
+    rand(List, full);
 rand(List)
   when is_list(List) ->
     %% 先随机获取一个位置，然后返回对一个的元素
@@ -1119,6 +1121,14 @@ rand([{_, _} | _] = List, full) ->
                   OldPower + IPower
           end, 0, List),
     rand(List, FullPower);
+rand([[_, _] | _] = List, full) ->
+    {NewList, FullPower} = 
+        lists:foldl(
+          fun([IKey, IPower], {Acc, OldPower}) ->
+                  %% 叠加权重处理
+                  {[{IKey, IPower}|Acc], OldPower + IPower}
+          end, {[], 0}, List),
+    rand(NewList, FullPower);
 rand([{_, _} | _] = List, Base) ->
     Rand = rand(1, Base),
     %% 过滤掉小于随机值的数据
