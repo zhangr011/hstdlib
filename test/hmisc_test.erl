@@ -123,7 +123,8 @@ my_test() ->
 
 apply_string_test() ->
     [
-     ?assertEqual(1, hmisc:apply_string("hmisc:rand(1,1)"))
+     ?assertEqual(1, hmisc:apply_string("hmisc:rand(1,1)")),
+     ?assertEqual(player, hmisc:apply_string("hmisc:to_atom(\"player\")"))
     ].
 
 -record(player,{
