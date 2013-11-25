@@ -32,5 +32,13 @@ cal_begin_end_test_() ->
     [?_assertEqual({1371175200, 1372039200}, 
                    hmisctime:cal_begin_end({2013, 6, 14, 10, 0, 0}, {2013, 6, 24, 10, 0, 0}, range)),
      ?_assertEqual({undefined, undefined}, hmisctime:cal_begin_end(233, 322, al)),
-     ?_assertEqual({1371175200, 1372039200}, 
-                   hmisctime:cal_begin_end({2013, 6, 14, 10, 0, 0}, {0, 0, 10, 0, 0, 0}, plus))].
+     ?_assertEqual({1371175200, 1372042861}, 
+                   hmisctime:cal_begin_end({2013, 6, 14, 10, 0, 0}, {0, 0, 10, 1, 1, 1}, plus))].
+
+
+cal_begin_end_advance_test_() ->
+    [?_assertEqual({1371175200, 1372039200, 1371085139}, 
+                   hmisctime:cal_begin_end_advance({2013, 6, 14, 10, 0, 0}, {2013, 6, 24, 10, 0, 0}, {0, 0, 1, 1, 1, 1}, range)),
+     ?_assertEqual({undefined, undefined, undefined}, hmisctime:cal_begin_end_advance(233, 322, 1, al)),
+     ?_assertEqual({1371175200, 1372042861, 1371085139},
+                   hmisctime:cal_begin_end_advance({2013, 6, 14, 10, 0, 0}, {0, 0, 10, 1, 1, 1}, {0, 0, 1, 1, 1, 1}, plus))].

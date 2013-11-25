@@ -37,7 +37,8 @@
          get_week_day/0,
          get_midnight_seconds/1,
          get_days_passed/2,
-         cal_begin_end/3
+         cal_begin_end/3,
+         cal_begin_end_advance/4
         ]).
 
 %% ====================================================================
@@ -324,15 +325,29 @@ cal_begin_end({_,M1,D1,_,_,_}=BeginTime, {_,M2,D2,_,_,_}=EndTime, range)
          D2 >= 1, D2 =< 31 ->
     {datetime_to_timestamp(BeginTime),  
      datetime_to_timestamp(EndTime)};
-cal_begin_end({Year, Month, Day, Hour, Min, Sec}=BeginTime, {DY, DM, DD, DH, DMin, DS}, plus) 
+%% 加法不支持配月和年，全部由策划换算成多少天
+cal_begin_end({Year, Month, Day, Hour, Min, Sec}=BeginTime, {0, 0, DD, DH, DMin, DS}, plus) 
     when Month >= 1, Month =< 12,
          Day >= 1, Day =< 31 ->
     Delta = DD * ?ONE_DAY_SECONDS + DH * ?ONE_HOUR_SECONDS + DMin * ?ONE_MINITE_SECONDS + DS,
-    TempMon = Month + DM,
-    RMon = (TempMon - 1) rem 12 + 1,
-    CYear = (TempMon - 1) div 12,
-    {datetime_to_timestamp(BeginTime), 
-     datetime_to_timestamp(Year + DY + CYear, RMon, Day, Hour, Min, Sec) + Delta};
+    NewBeginTime = datetime_to_timestamp(BeginTime),
+    {NewBeginTime, NewBeginTime + Delta};
 cal_begin_end(BeginTime, EndTime, Other) ->
     ?WARNING_MSG("maybe conf error ~p~n", [{BeginTime, EndTime, Other}]),
     {undefined, undefined}.
+
+cal_begin_end_advance(BeginTime, EndTime, undefined, Method) ->
+    cal_begin_end_advance(BeginTime, EndTime, {0, 0, 0, 0, 0, 0}, Method);
+cal_begin_end_advance(BeginTime, EndTime, {0, 0, DD, DH, DMin, DS}=Advance, Method) ->
+    Delta = DD * ?ONE_DAY_SECONDS + DH * ?ONE_HOUR_SECONDS + DMin * ?ONE_MINITE_SECONDS + DS,
+    case cal_begin_end(BeginTime, EndTime, Method) of 
+        {NewBeginTime, NewEndTime} 
+          when is_integer(NewBeginTime),
+               is_integer(NewEndTime) ->
+            {NewBeginTime, NewEndTime, NewBeginTime-Delta};
+        {NewBeginTime, NewEndTime} ->
+            {NewBeginTime, NewEndTime, NewBeginTime}
+    end;
+cal_begin_end_advance(BeginTime, EndTime, Advance, Other) ->
+    ?WARNING_MSG("maybe conf error ~p~n", [{BeginTime, EndTime, Advance, Other}]),
+    {undefined, undefined, undefined}.
