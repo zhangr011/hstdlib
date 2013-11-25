@@ -36,7 +36,8 @@
          get_today_current_second/0,
          get_week_day/0,
          get_midnight_seconds/1,
-         get_days_passed/2
+         get_days_passed/2,
+         cal_begin_end/3
         ]).
 
 %% ====================================================================
@@ -312,3 +313,26 @@ get_server_start_time() ->
 one_to_two(One) ->
     io_lib:format("~2..0B", [One]).
 
+
+
+
+%% {2013, 6, 14, 10, 0, 0} - {2013, 8, 1, 10, 0, 0}
+cal_begin_end({_,M1,D1,_,_,_}=BeginTime, {_,M2,D2,_,_,_}=EndTime, range)
+    when M1 >= 1, M1 =< 12,
+         D1 >= 1, D1 =< 31,
+         M2 >= 1, M2 =< 12,
+         D2 >= 1, D2 =< 31 ->
+    {datetime_to_timestamp(BeginTime),  
+     datetime_to_timestamp(EndTime)};
+cal_begin_end({Year, Month, Day, Hour, Min, Sec}=BeginTime, {DY, DM, DD, DH, DMin, DS}, plus) 
+    when Month >= 1, Month =< 12,
+         Day >= 1, Day =< 31 ->
+    Delta = DD * ?ONE_DAY_SECONDS + DH * ?ONE_HOUR_SECONDS + DMin * ?ONE_MINITE_SECONDS + DS,
+    TempMon = Month + DM,
+    RMon = (TempMon - 1) rem 12 + 1,
+    CYear = (TempMon - 1) div 12,
+    {datetime_to_timestamp(BeginTime), 
+     datetime_to_timestamp(Year + DY + CYear, RMon, Day, Hour, Min, Sec) + Delta};
+cal_begin_end(BeginTime, EndTime, Other) ->
+    ?WARNING_MSG("maybe conf error ~p~n", [{BeginTime, EndTime, Other}]),
+    {undefined, undefined}.

@@ -27,3 +27,10 @@ mod_timer_test() ->
     ?assertNotEqual(Last, Next),
     application:stop(hstdlib).
 
+cal_begin_end_test_() ->
+    hloglevel:set(6),
+    [?_assertEqual({1371175200, 1372039200}, 
+                   hmisctime:cal_begin_end({2013, 6, 14, 10, 0, 0}, {2013, 6, 24, 10, 0, 0}, range)),
+     ?_assertEqual({undefined, undefined}, hmisctime:cal_begin_end(233, 322, al)),
+     ?_assertEqual({1371175200, 1372039200}, 
+                   hmisctime:cal_begin_end({2013, 6, 14, 10, 0, 0}, {0, 0, 10, 0, 0, 0}, plus))].
