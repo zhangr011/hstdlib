@@ -25,6 +25,7 @@
          get_timestamp_of_today_start/0,
          get_timestamp_of_tomorrow_start/0,
          get_timestamp_of_week_start/0,
+         get_timestamp_of_month_start/0,
          is_same_date/2,
          is_same_month/2,
          is_same_week/2,
@@ -38,7 +39,19 @@
          get_midnight_seconds/1,
          get_days_passed/2,
          cal_begin_end/3,
-         cal_begin_end_advance/4
+         cal_begin_end_advance/4,
+         cal_week_cycle/3,
+         cal_week_cycle/1,
+         cal_week_cycle_advance/4,
+         cal_week_cycle_advance/2,
+         cal_month_cycle/1,
+         cal_month_cycle/3,
+         cal_month_cycle_advance/2,
+         cal_month_cycle_advance/4,
+         cal_day_cycle/1,
+         cal_day_cycle/3,
+         cal_day_cycle_advance/2,
+         cal_day_cycle_advance/4
         ]).
 
 %% ====================================================================
@@ -123,8 +136,11 @@ get_seconds_to_tomorrow_4() ->
 %% 获取本周开始的秒数
 get_timestamp_of_week_start() ->
     Now = unixtime(),
-    Now - ((Now + ?TIME_ZONE_SECONDS) rem ?ONE_WEEK_SECONDS).
+    Now - ((Now + ?TIME_ZONE_SECONDS) rem ?ONE_WEEK_SECONDS) + ?ONE_DAY_SECONDS * 4.
 
+get_timestamp_of_month_start()->
+    {{Year, Month, Day}, _} = timestamp_to_datetime(unixtime()),
+    datetime_to_timestamp(Year, Month, 1, 0, 0, 0).
 %% -----------------------------------------------------------------
 %% 判断是否同一星期
 %% -----------------------------------------------------------------
@@ -351,3 +367,97 @@ cal_begin_end_advance(BeginTime, EndTime, {0, 0, DD, DH, DMin, DS}=Advance, Meth
 cal_begin_end_advance(BeginTime, EndTime, Advance, Other) ->
     ?WARNING_MSG("maybe conf error ~p~n", [{BeginTime, EndTime, Advance, Other}]),
     {undefined, undefined, undefined}.
+
+
+cal_week_cycle(WeekInfo) ->
+    Now = unixtime(),
+    WeekStart = get_timestamp_of_week_start(),
+    cal_week_cycle(WeekInfo, Now, WeekStart).
+cal_week_cycle(WeekInfo, Now, WeekStart) ->
+    inner_cal_cycle(WeekInfo, Now, WeekStart).
+
+cal_week_cycle_advance(WeekInfo, Advance) ->    
+    Now = unixtime(),
+    WeekStart = get_timestamp_of_week_start(),
+    cal_week_cycle_advance(WeekInfo, Advance, Now, WeekStart).
+cal_week_cycle_advance(WeekInfo, Advance, Now, WeekStart) ->    
+    inner_cal_cycle_advance(WeekInfo, Advance, Now, WeekStart).
+
+
+cal_month_cycle(MonthInfo) ->
+    Now = unixtime(),
+    MonthStart = get_timestamp_of_month_start(),
+    cal_month_cycle(MonthInfo, Now, MonthStart).
+cal_month_cycle(MonthInfo, Now, MonthStart) ->
+    inner_cal_cycle(MonthInfo, Now, MonthStart).
+
+cal_month_cycle_advance(MonthInfo, Advance) ->
+    Now = unixtime(),
+    MonthStart = get_timestamp_of_month_start(),
+    cal_month_cycle_advance(MonthInfo, Advance, Now, MonthStart).
+cal_month_cycle_advance(MonthInfo, Advance, Now, MonthStart) ->
+    inner_cal_cycle_advance(MonthInfo, Advance, Now, MonthStart).
+
+
+cal_day_cycle(DayInfo) ->
+    Now = unixtime(),
+    DayStart = get_timestamp_of_today_start(),
+    cal_day_cycle(DayInfo, Now, DayStart).
+cal_day_cycle(DayInfo, Now, DayStart) ->
+    inner_cal_cycle(DayInfo, Now, DayStart).
+
+cal_day_cycle_advance(DayInfo, Advance) ->
+    Now = unixtime(),
+    DayStart = get_timestamp_of_today_start(),
+    cal_day_cycle_advance(DayInfo, Advance, Now, DayStart).
+cal_day_cycle_advance(DayInfo, Advance, Now, DayStart) ->
+    inner_cal_cycle_advance(DayInfo, Advance, Now, DayStart).
+
+
+
+inner_cal_cycle([], _, _) ->
+    {undefined, undefined};
+inner_cal_cycle({{BeginHour, BeginMin}, {ContiHour, ContiMin}}, Now, Start) ->
+    inner_cal_cycle({1, {BeginHour, BeginMin}, {ContiHour, ContiMin}}, Now, Start);
+inner_cal_cycle({Day, {BeginHour, BeginMin}, {ContiHour, ContiMin}}=Info, Now, Start) ->
+    StartTimeStamp = Start + (Day - 1)*?ONE_DAY_SECONDS,
+    BeginSeconds = BeginHour * ?ONE_HOUR_SECONDS + BeginMin * ?ONE_MINITE_SECONDS,
+    EndSeconds = (BeginHour + ContiHour) * ?ONE_HOUR_SECONDS + (BeginMin + ContiMin) * ?ONE_MINITE_SECONDS,
+    Begin = StartTimeStamp + BeginSeconds,
+    End = StartTimeStamp + EndSeconds,
+    %?DEBUG("Info ~p, ~p~n", [{Info, Start}, {Begin, End, Now}]),
+    if 
+        Begin =< Now andalso
+        Now =< End -> 
+            {Begin, End};
+        true ->
+            {undefined, undefined}
+    end;
+inner_cal_cycle([Info|Acc], Now, Start) ->
+    case inner_cal_cycle(Info, Now, Start) of
+        {undefined, undefined} ->
+            inner_cal_cycle(Acc, Now, Start);
+        Other ->
+            Other
+    end;
+inner_cal_cycle(Info, Now, Start) ->
+    ?WARNING_MSG("ArgList may wrong ~p~n", [{Info, Now}]),
+    {undefined, undefined}.
+
+%% 如果是多次循环，建议将时间传进来，减少查询ETS
+inner_cal_cycle_advance(Info, undefined, Now, Start) ->
+    inner_cal_cycle_advance(Info, {0, 0, 0, 0, 0, 0}, Now, Start);
+inner_cal_cycle_advance(Info, {0, 0, DD, DH, DMin, DS}=Advance, Now, Start) ->    
+    Delta = DD * ?ONE_DAY_SECONDS + DH * ?ONE_HOUR_SECONDS + DMin * ?ONE_MINITE_SECONDS + DS,
+    case inner_cal_cycle(Info, Now, Start) of 
+        {NewBeginTime, NewEndTime} 
+          when is_integer(NewBeginTime),
+               is_integer(NewEndTime) ->
+            {NewBeginTime, NewEndTime, NewBeginTime-Delta};
+        {NewBeginTime, NewEndTime} ->
+            {NewBeginTime, NewEndTime, NewBeginTime}
+    end;
+inner_cal_cycle_advance(Info, Advance, _, _) ->
+    ?WARNING_MSG("ArgList may wrong ~p~n", [{Info, Advance}]),
+    {undefined, undefined, undefined}.
+
