@@ -85,15 +85,15 @@ cal_begin_end_advance_test_() ->
 
 %% cal_day_cycle_test_() ->
 %%     application:start(hstdlib),
-%%     [?_assertEqual({undefined, undefined}, hmisctime:cal_day_cycle({{10, 30}, {2, 00}})),
-%%      ?_assertEqual({1385373600, 1385452800}, hmisctime:cal_day_cycle({{18, 0}, {22, 00}})),
-%%      ?_assertEqual({1385373600, 1385452800}, hmisctime:cal_day_cycle([{{10, 30}, {2, 00}}, {{18, 0}, {22, 00}}])),
+%%     [?_assertEqual({1385433000, 1385440200}, hmisctime:cal_day_cycle({{10, 30}, {2, 00}})),
+%%      ?_assertEqual({undefined, undefined}, hmisctime:cal_day_cycle({{18, 0}, {22, 00}})),
+%%      ?_assertEqual({1385433000, 1385440200}, hmisctime:cal_day_cycle([{{10, 30}, {2, 00}}, {{18, 0}, {22, 00}}])),
 %%      ?_assertEqual({undefined, undefined}, hmisctime:cal_day_cycle(errr))].
 
 %% cal_day_cycle_advance_test_() ->
 %%     application:start(hstdlib),
-%%     [?_assertEqual({undefined, undefined, undefined}, hmisctime:cal_day_cycle_advance({{10, 30}, {2, 00}}, {0, 0, 1, 1, 1, 1})),
-%%      ?_assertEqual({1385373600, 1385452800, 1385283539}, hmisctime:cal_day_cycle_advance({{18, 0}, {22, 00}}, {0, 0, 1, 1, 1, 1})),
-%%      ?_assertEqual({1385373600, 1385452800, 1385283539}, hmisctime:cal_day_cycle_advance([{{10, 30}, {2, 00}}, {{18, 0}, {22, 00}}], {0, 0, 1, 1, 1, 1})),
-%%      ?_assertEqual({1385373600, 1385452800, 1385373600}, hmisctime:cal_day_cycle_advance([{{10, 30}, {2, 00}}, {{18, 0}, {22, 00}}], undefined)),
+%%     [?_assertEqual({1385433000, 1385440200, 1385342939}, hmisctime:cal_day_cycle_advance({{10, 30}, {2, 00}}, {0, 0, 1, 1, 1, 1})),
+%%      ?_assertEqual({1385460000, 1385539200, 1385369939}, hmisctime:cal_day_cycle_advance({{18, 0}, {22, 00}}, {0, 0, 1, 1, 1, 1})),
+%%      ?_assertEqual({1385433000, 1385440200, 1385429400}, hmisctime:cal_day_cycle_advance([{{10, 30}, {2, 00}}, {{18, 0}, {22, 00}}], {0, 0, 0, 1, 0, 0})),
+%%      ?_assertEqual({1385433000, 1385440200, 1385433000}, hmisctime:cal_day_cycle_advance([{{10, 30}, {2, 00}}, {{18, 0}, {22, 00}}], undefined)),
 %%      ?_assertEqual({undefined, undefined, undefined}, hmisctime:cal_day_cycle_advance(errr, eax))].

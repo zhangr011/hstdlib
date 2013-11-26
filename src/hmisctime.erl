@@ -342,7 +342,7 @@ cal_begin_end({_,M1,D1,_,_,_}=BeginTime, {_,M2,D2,_,_,_}=EndTime, range)
     {datetime_to_timestamp(BeginTime),  
      datetime_to_timestamp(EndTime)};
 %% 加法不支持配月和年，全部由策划换算成多少天
-cal_begin_end({Year, Month, Day, Hour, Min, Sec}=BeginTime, {0, 0, DD, DH, DMin, DS}, plus) 
+cal_begin_end({_Year, Month, Day, _Hour, _Min, _Sec}=BeginTime, {0, 0, DD, DH, DMin, DS}, plus) 
     when Month >= 1, Month =< 12,
          Day >= 1, Day =< 31 ->
     Delta = DD * ?ONE_DAY_SECONDS + DH * ?ONE_HOUR_SECONDS + DMin * ?ONE_MINITE_SECONDS + DS,
@@ -354,7 +354,7 @@ cal_begin_end(BeginTime, EndTime, Other) ->
 
 cal_begin_end_advance(BeginTime, EndTime, undefined, Method) ->
     cal_begin_end_advance(BeginTime, EndTime, {0, 0, 0, 0, 0, 0}, Method);
-cal_begin_end_advance(BeginTime, EndTime, {0, 0, DD, DH, DMin, DS}=Advance, Method) ->
+cal_begin_end_advance(BeginTime, EndTime, {0, 0, DD, DH, DMin, DS}, Method) ->
     Delta = DD * ?ONE_DAY_SECONDS + DH * ?ONE_HOUR_SECONDS + DMin * ?ONE_MINITE_SECONDS + DS,
     case cal_begin_end(BeginTime, EndTime, Method) of 
         {NewBeginTime, NewEndTime} 
@@ -414,49 +414,41 @@ cal_day_cycle_advance(DayInfo, Advance, Now, DayStart) ->
     inner_cal_cycle_advance(DayInfo, Advance, Now, DayStart).
 
 
+inner_cal_cycle(Info, Now, Start) ->
+    {Begin, End, _} = inner_cal_cycle_advance(Info, {0, 0, 0, 0, 0, 0}, Now, Start),
+    {Begin, End}.
 
-inner_cal_cycle([], _, _) ->
-    {undefined, undefined};
-inner_cal_cycle({{BeginHour, BeginMin}, {ContiHour, ContiMin}}, Now, Start) ->
-    inner_cal_cycle({1, {BeginHour, BeginMin}, {ContiHour, ContiMin}}, Now, Start);
-inner_cal_cycle({Day, {BeginHour, BeginMin}, {ContiHour, ContiMin}}=Info, Now, Start) ->
+%% 如果是多次循环，建议将时间传进来，减少查询ETS
+inner_cal_cycle_advance([], _, _, _) ->
+    {undefined, undefined, undefined};
+inner_cal_cycle_advance(Info, undefined, Now, Start) ->
+    inner_cal_cycle_advance(Info, {0, 0, 0, 0, 0, 0}, Now, Start);
+inner_cal_cycle_advance({{BeginHour, BeginMin}, {ContiHour, ContiMin}}, Advance, Now, Start) ->
+    inner_cal_cycle_advance({1, {BeginHour, BeginMin}, {ContiHour, ContiMin}}, Advance, Now, Start);
+inner_cal_cycle_advance({Day, {BeginHour, BeginMin}, {ContiHour, ContiMin}}, {0, 0, DD, DH, DMin, DS}, Now, Start) ->    
+    Delta = DD * ?ONE_DAY_SECONDS + DH * ?ONE_HOUR_SECONDS + DMin * ?ONE_MINITE_SECONDS + DS,
     StartTimeStamp = Start + (Day - 1)*?ONE_DAY_SECONDS,
     BeginSeconds = BeginHour * ?ONE_HOUR_SECONDS + BeginMin * ?ONE_MINITE_SECONDS,
     EndSeconds = (BeginHour + ContiHour) * ?ONE_HOUR_SECONDS + (BeginMin + ContiMin) * ?ONE_MINITE_SECONDS,
     Begin = StartTimeStamp + BeginSeconds,
     End = StartTimeStamp + EndSeconds,
+    Show = Begin - Delta,
     %?DEBUG("Info ~p, ~p~n", [{Info, Start}, {Begin, End, Now}]),
     if 
-        Begin =< Now andalso
+        Show =< Now andalso
         Now =< End -> 
-            {Begin, End};
+            {Begin, End, Show};
         true ->
-            {undefined, undefined}
+            {undefined, undefined, undefined}
     end;
-inner_cal_cycle([Info|Acc], Now, Start) ->
-    case inner_cal_cycle(Info, Now, Start) of
-        {undefined, undefined} ->
-            inner_cal_cycle(Acc, Now, Start);
+inner_cal_cycle_advance([Info|Acc], Advance, Now, Start) ->
+    case inner_cal_cycle_advance(Info, Advance, Now, Start) of
+        {undefined, undefined, undefined} ->
+            inner_cal_cycle_advance(Acc, Advance, Now, Start);
         Other ->
             Other
     end;
-inner_cal_cycle(Info, Now, Start) ->
-    ?WARNING_MSG("ArgList may wrong ~p~n", [{Info, Now}]),
-    {undefined, undefined}.
 
-%% 如果是多次循环，建议将时间传进来，减少查询ETS
-inner_cal_cycle_advance(Info, undefined, Now, Start) ->
-    inner_cal_cycle_advance(Info, {0, 0, 0, 0, 0, 0}, Now, Start);
-inner_cal_cycle_advance(Info, {0, 0, DD, DH, DMin, DS}=Advance, Now, Start) ->    
-    Delta = DD * ?ONE_DAY_SECONDS + DH * ?ONE_HOUR_SECONDS + DMin * ?ONE_MINITE_SECONDS + DS,
-    case inner_cal_cycle(Info, Now, Start) of 
-        {NewBeginTime, NewEndTime} 
-          when is_integer(NewBeginTime),
-               is_integer(NewEndTime) ->
-            {NewBeginTime, NewEndTime, NewBeginTime-Delta};
-        {NewBeginTime, NewEndTime} ->
-            {NewBeginTime, NewEndTime, NewBeginTime}
-    end;
 inner_cal_cycle_advance(Info, Advance, _, _) ->
     ?WARNING_MSG("ArgList may wrong ~p~n", [{Info, Advance}]),
     {undefined, undefined, undefined}.
