@@ -739,6 +739,9 @@ to_float(Msg)->
 
 %% @doc convert other type to integer
 -spec to_integer(Msg :: any()) -> integer().
+to_integer(undefined) ->
+    ?WARNING_MSG("type error undefined~n", []),
+    0;
 to_integer(true) ->
     1;
 to_integer(false) ->
@@ -753,6 +756,7 @@ to_integer(Msg) when is_list(Msg) ->
 to_integer(Msg) when is_float(Msg) -> 
     round(Msg);
 to_integer(_Msg) ->
+    ?WARNING_MSG("type error: ~p~n", [_Msg]),
     throw(other_value).
 
 to_bool(D) when is_integer(D) ->
