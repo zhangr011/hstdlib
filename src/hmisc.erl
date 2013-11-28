@@ -36,6 +36,7 @@
          to_integer/1,
          to_list/1,
          to_record/2,
+         to_string/1,
          to_tuple/1,
          to_utf8_string/1,
          to_atom/1,
@@ -1287,8 +1288,10 @@ ele_tail(Ele, [Ele|T]) ->
 ele_tail(Ele, [_|T]) ->
     ele_tail(Ele, T).
 
-to_string(Integer) ->
-    lists:flatten(io_lib:format("~p", [Integer])).
+to_string(Integer) when is_integer(Integer) ->
+    lists:flatten(io_lib:format("~p", [Integer]));
+to_string(Other) ->
+    Other.
 
 %% term序列化，term转换为string格式，e.g., [{a},1] => "[{a},1]"
 term_to_string(Term) ->

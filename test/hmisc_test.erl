@@ -126,7 +126,9 @@ apply_string_test() ->
      ?assertEqual(1, hmisc:apply_string("hmisc:rand(1,1)")),
      ?assertEqual(player, hmisc:apply_string("hmisc:to_atom(\"player\")")),
      ?assertEqual(
-        {"on", 1}, hmisc:apply_string("hmisc:to_tuple({\"on\",1})"))
+        {"on", 1}, hmisc:apply_string("hmisc:to_tuple({\"on\",1})")),
+     ?assertEqual(
+        0, hmisc:apply_string("hdb:dirty_count(player,{\"online\",1})"))
     ].
 
 -record(player,{
