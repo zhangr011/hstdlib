@@ -161,7 +161,8 @@ get_change_test_() ->
              guild_name="undefined",
              guild_title= <<"undefined">>,
              nickname = <<"acbc">> }, record_info(fields, player)))].
-
+record_merge_test_() ->
+    [?_assertEqual(#player{id=1,sex=2,vip=1}, hmisc:record_merge(#player{id=1,sex=3,vip=1}, #player{id=1,sex=2,vip=1}))].
 stop_test() ->
     application:stop(hstdlib).
 

@@ -140,7 +140,8 @@
          new_session/0,
          get_change/3,
          load_base_data/3,
-         load_game_data/3
+         load_game_data/3,
+         record_merge/2
         ]).
 
 %%
@@ -2154,3 +2155,20 @@ load_game_data(L, EtsTable, HandleFun) ->
             ?WARNING_MSG("insert ~p failed R:~w Stack: ~p~n",[EtsTable, R, erlang:get_stacktrace()])
     end,
     ok.
+
+
+record_merge(R1, R2) 
+  when is_tuple(R1),
+       is_tuple(R2) ->
+    record_merge(tuple_to_list(R1), tuple_to_list(R2), []).
+
+record_merge([], [], Ans) ->
+    list_to_tuple(lists:reverse(Ans));
+record_merge([H1 | L1], [undefined | L2], Ans) ->
+    record_merge(L1, L2, [H1|Ans]);
+record_merge([H1 | L1], [[] | L2], Ans) ->
+    record_merge(L1, L2, [H1|Ans]);
+record_merge([_H1 | L1], [H2 | L2], Ans) ->
+    record_merge(L1, L2, [H2|Ans]).
+
+
