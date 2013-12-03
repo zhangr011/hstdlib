@@ -1157,26 +1157,23 @@ rand([{_, _} | _] = List, Base) ->
     Rand = rand(1, Base),
     %% 过滤掉小于随机值的数据
     inner_select(Rand, 0, List);
-rand(Same, Same) -> 
-    Same;
-rand(Min, Max) ->
-    M = Min - 1,
-    if
-        Max - M =< 0 ->
-            0;
-        true ->
-            %% 如果没有种子，将从核心服务器中去获取一个种子，以保证不同进程都可取得不同的种子
-            case get(rand_seed) of
-                undefined ->
-                    RandSeed = hmod_rand:get_seed(),
-                    random:seed(RandSeed),
-                    put(rand_seed, RandSeed);
-                _ ->
-                    skip
-            end,
-            %% random:seed(erlang:now()),
-            random:uniform(Max - M) + M
-    end.
+%% 产生一个介于Min到Max之间的随机整数
+%% rand(1, Max-Min+1) + (Min-1)
+%% 随机数+偏移量
+rand(Min, Max) 
+  when Min < Max->
+    %% 如果没有种子，将从核心服务器中去获取一个种子，以保证不同进程都可取得不同的种子
+    RandSeed = case get(hmisc_rand_seed) of
+                   undefined ->
+                       mod_rand:get_seed();
+                   TmpRandSeed ->
+                       TmpRandSeed
+               end,
+    {F, NewRandSeed} =  random:uniform_s(Max - (Min - 1), RandSeed),
+    %%?DEBUG("{F, NewRandSeed} ~p~n", [{F, NewRandSeed}]),
+    put(hmisc_rand_seed, NewRandSeed),
+    F + (Min - 1).
+
 
 %% 根据权重选取 n 个目标
 inner_rand_n_helper(Number, _, SelectedList)
