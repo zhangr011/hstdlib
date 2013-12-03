@@ -1165,7 +1165,7 @@ rand(Min, Max)
     %% 如果没有种子，将从核心服务器中去获取一个种子，以保证不同进程都可取得不同的种子
     RandSeed = case get(hmisc_rand_seed) of
                    undefined ->
-                       mod_rand:get_seed();
+                       hmod_rand:get_seed();
                    TmpRandSeed ->
                        TmpRandSeed
                end,
