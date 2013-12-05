@@ -1161,7 +1161,7 @@ rand([{_, _} | _] = List, Base) ->
 %% rand(1, Max-Min+1) + (Min-1)
 %% 随机数+偏移量
 rand(Min, Max) 
-  when Min < Max->
+  when Min =< Max->
     %% 如果没有种子，将从核心服务器中去获取一个种子，以保证不同进程都可取得不同的种子
     RandSeed = case get(hmisc_rand_seed) of
                    undefined ->
