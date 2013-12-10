@@ -180,12 +180,12 @@ unregister(global, Name) ->
 %% @doc 注册一个玩家进程，绑定到一个唯一的原子上
 register_player(PlayerId, Pid) ->
     PlayerPidName = player_process_name(PlayerId),
-    hmisc:register(global, PlayerPidName, Pid).
+    register(global, PlayerPidName, Pid).
 
 %% @doc 取消玩家进程的注册
 unregister_player(PlayerId) ->
     PlayerPidName = player_process_name(PlayerId),
-    hmisc:unregister(global, PlayerPidName).
+    unregister(global, PlayerPidName).
 
 %%
 %% API Functions
@@ -193,7 +193,7 @@ unregister_player(PlayerId) ->
 %% get the pid of a registered name
 whereis_player_pid(PlayerId) -> 
     PlayerProcessName = player_process_name(PlayerId),
-    case hmisc:whereis_name({global, PlayerProcessName}) of
+    case whereis_name({global, PlayerProcessName}) of
         Pid 
           when is_pid(Pid) ->
             case hmisc:is_process_alive(Pid) of
