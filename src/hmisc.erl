@@ -165,7 +165,7 @@ register(global, Name, Pid) ->
     %% 		undefined ->
     %% 			global:re_register_name(Name, Pid)
     %% 	end.
-    global:re_register_name(Name, Pid);
+    global:register_name(Name, Pid);
 register(unique,Name,Pid) ->
     global:register_name(Name, Pid).
 
