@@ -2128,17 +2128,17 @@ get_change2([_|L1], [V2|L2], [Field|FieldList], Ans) ->
 
 load_base_data(DbTable, EtsTable, HandleFun) ->
     L = db_base:select_all(DbTable, "*", []),
-    ets_util:lock(EtsTable),
+    hetsutil:lock(EtsTable),
     try
-        ets_util:truncate(EtsTable),
+        hetsutil:truncate(EtsTable),
         lists:foreach(fun(Info) ->
                               RecInfo = HandleFun(Info),
-                              ets_util:insert(EtsTable, RecInfo)
+                              hetsutil:insert(EtsTable, RecInfo)
                       end, L)
     catch _:R ->
             ?WARNING_MSG("load ~p failed R:~w Stack: ~p~n",[DbTable, R, erlang:get_stacktrace()])
     after
-        ets_util:unlock(EtsTable)
+        hetsutil:unlock(EtsTable)
     end,
     ok.
 
@@ -2146,7 +2146,7 @@ load_game_data(L, EtsTable, HandleFun) ->
     try
         lists:foreach(fun(Info) ->
                               RecInfo = HandleFun(Info),
-                              ets_util:insert(EtsTable, RecInfo)
+                              hetsutil:insert(EtsTable, RecInfo)
                       end, L)
     catch _:R ->
             ?WARNING_MSG("insert ~p failed R:~w Stack: ~p~n",[EtsTable, R, erlang:get_stacktrace()])
