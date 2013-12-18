@@ -51,7 +51,8 @@
          cal_day_cycle/1,
          cal_day_cycle/3,
          cal_day_cycle_advance/2,
-         cal_day_cycle_advance/4
+         cal_day_cycle_advance/4,
+         yyyymmdd/0
         ]).
 
 %% ====================================================================
@@ -68,6 +69,11 @@ time_format(Now) ->
     {{Y,M,D},{H,MM,S}} = calendar:now_to_local_time(Now),
     lists:concat([Y, "-", one_to_two(M), "-", one_to_two(D), " ", 
                   one_to_two(H) , ":", one_to_two(MM), ":", one_to_two(S)]).
+
+yyyymmdd() ->
+    {{Y,M,D},{_H,_MM,_S}} = calendar:now_to_local_time(current()),
+    lists:concat([Y, one_to_two(M), one_to_two(D)]).
+    
 
 %% 取得当前的unix时间戳，秒级
 unixtime() ->
