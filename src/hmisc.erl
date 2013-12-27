@@ -141,7 +141,9 @@
          get_change/3,
          load_base_data/3,
          load_game_data/3,
-         record_merge/2
+         record_merge/2,
+
+         rand_str/0
         ]).
 
 %%
@@ -2169,3 +2171,16 @@ record_merge([_H1 | L1], [H2 | L2], Ans) ->
     record_merge(L1, L2, [H2|Ans]).
 
 
+%% 获取HEX格式的字串
+rand_str() ->
+    to_hex(crypto:rand_bytes(4)).
+
+to_hex([]) ->
+    [];
+to_hex(Bin) when is_binary(Bin) ->
+    to_hex(binary_to_list(Bin));
+to_hex([H|T]) ->
+    [to_digit(H div 16), to_digit(H rem 16) | to_hex(T)].
+
+to_digit(N) when N < 10 -> $0 + N;
+to_digit(N) -> $a + N-10.
