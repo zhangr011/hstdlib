@@ -26,7 +26,7 @@
          is_process_alive/1,
          player_process_name/1,
          create_process_name/2,
-
+         get_process_all_pid/2,
          atomize/1,
          apply_string/1,
          int_to_hex/1,
@@ -40,7 +40,7 @@
          to_tuple/1,
          to_utf8_string/1,
          to_atom/1,
-
+         get_process_info_detail/3,
          add_in_max/3,
          ceil/1,
          floor/1,
@@ -82,6 +82,7 @@
          max/1,
          max/2,
          md5/1,
+         check_md5_sign/2,
          hmac_sha1/2,
          is_string/1,
          is_string/2,
@@ -142,7 +143,7 @@
          load_base_data/3,
          load_game_data/3,
          record_merge/2,
-
+         url_decode/1,
          rand_str/0
         ]).
 
@@ -911,6 +912,11 @@ md5(S) ->
     Md5_list = binary_to_list(Md5_bin), 
     lists:flatten(list_to_hex(Md5_list)). 
 
+check_md5_sign(ValueList, Sign) 
+  when is_list(ValueList) ->
+    NewList = lists:concat(ValueList),
+    md5(NewList) =:= Sign.
+    
 list_to_hex(L) -> 
     lists:map(fun(X) -> int_to_hex(X) end, L). 
 
@@ -2184,3 +2190,15 @@ to_hex([H|T]) ->
 
 to_digit(N) when N < 10 -> $0 + N;
 to_digit(N) -> $a + N-10.
+
+url_decode(URL) ->
+    url_decode(URL, []).
+
+url_decode([], Acc) ->
+    lists:reverse(Acc);
+url_decode([37,H,L|T], Acc) ->
+    url_decode(T, [erlang:list_to_integer([H,L], 16) | Acc]);
+url_decode([$+|T], Acc) ->
+    url_decode(T, [32|Acc]);
+url_decode([H|T], Acc) ->
+    url_decode(T, [H|Acc]).

@@ -52,7 +52,8 @@
          cal_day_cycle/3,
          cal_day_cycle_advance/2,
          cal_day_cycle_advance/4,
-         yyyymmdd/0
+         yyyymmdd/0,
+         cpu_time/0
         ]).
 
 %% ====================================================================
@@ -329,7 +330,7 @@ cpu_time() ->
 
 %% @doc get server start time
 get_server_start_time() ->
-    {YY, MM, DD, HH, II, SS} = config:get_server_start_time(),
+    {YY, MM, DD, HH, II, SS} = app_misc:get_env(server_start_timestamp),
     datetime_to_timestamp(YY, MM, DD, HH, II, SS).
 
 %% time format

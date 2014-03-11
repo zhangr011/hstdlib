@@ -18,7 +18,7 @@
                     ,{3, warning, "Warning"}
                     ,{4, info, "Info"}
                     ,{5, debug, "Debug"}
-					,{6, test, "Test"}
+                     ,{6, test, "Test"}
                     ]).
 
 get() ->
