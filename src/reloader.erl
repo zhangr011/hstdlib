@@ -17,6 +17,7 @@
 -export([all_changed/0]).
 -export([is_changed/1]).
 -export([reload_modules/1]).
+-export([reload_all/0]).
 
 -record(state, {last, tref}).
 
@@ -38,15 +39,16 @@ stop() ->
     gen_server:call(?MODULE, stop).
 
 %% gen_server callbacks
--define(RERODER_CHECK_TIME,  5000).
+%% -define(RERODER_CHECK_TIME,  5000).
 
 %% @spec init([]) -> {ok, State}
 %% @doc gen_server init, opens the server in an initial state.
 init([]) ->
     %% {ok, TRef} = timer:send_interval(timer:seconds(1), doit),
-    TimerRef = erlang:send_after(?RERODER_CHECK_TIME, self(), doit),
-    {ok, #state{last = stamp(),
-                tref = TimerRef}}.
+    %% TimerRef = erlang:send_after(?RERODER_CHECK_TIME, self(), doit),
+    %% tref = TimerRef}}.
+    {ok, #state{last = stamp()}}.
+
 
 %% @spec handle_call(Args, From, State) -> tuple()
 %% @doc gen_server callback.
@@ -57,31 +59,34 @@ handle_call(_Req, _From, State) ->
 
 %% @spec handle_cast(Cast, State) -> tuple()
 %% @doc gen_server callback.
-handle_cast(_Req, State) ->
-    {noreply, State}.
-
 %% @spec handle_info(Info, State) -> tuple()
 %% @doc gen_server callback.
-handle_info(doit, State) ->
-    TimerRef = erlang:send_after(?RERODER_CHECK_TIME, self(), doit),
+handle_cast(doit, State) ->
+    error_logger:info_msg("reloader do reload ... ~n", []), 
+    %% TimerRef = erlang:send_after(?RERODER_CHECK_TIME, self(), doit),
     Now = stamp(),
     try
-        _ = doit(State#state.last, Now)
+        _ = doit(State#state.last, Now),
+        %% tref = TimerRef
+        error_logger:info_msg("reloader done ... ~n", []),
+        {noreply, State#state{last = Now}}
     catch
         _:R ->
             error_logger:error_msg(
-              "reload failed R:~w Stack:~p~n",[R, erlang:get_stacktrace()])
-    end,
-    {noreply, State#state{last = Now,
-                          tref = TimerRef
-                         }};
+              "reload failed R:~w Stack:~p~n", [R, erlang:get_stacktrace()]),
+            %% reloader failed, no state update
+            {noreply, State}
+    end;
+handle_cast(_Req, State) ->
+    {noreply, State}.
+
 handle_info(_Info, State) ->
     {noreply, State}.
 
 %% @spec terminate(Reason, State) -> ok
 %% @doc gen_server termination callback.
-terminate(_Reason, State) ->
-    erlang:cancel_timer(State#state.tref),
+terminate(_Reason, _State) ->
+    %% erlang:cancel_timer(State#state.tref),
     %% {ok, cancel} = timer:cancel(State#state.tref),
     ok.
 
@@ -100,6 +105,10 @@ reload_modules(Modules) ->
 %% @doc Return a list of beam modules that have changed.
 all_changed() ->
     [M || {M, Fn} <- code:all_loaded(), is_list(Fn), is_changed(M)].
+
+%% @spec reload_all() -> [atom()]
+reload_all() ->
+    gen_server:cast(?MODULE, doit).
 
 %% @spec is_changed(atom()) -> boolean()
 %% @doc true if the loaded module is a beam with a vsn attribute
