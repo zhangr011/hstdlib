@@ -62,7 +62,7 @@ handle_call(_Req, _From, State) ->
 %% @spec handle_info(Info, State) -> tuple()
 %% @doc gen_server callback.
 handle_cast(doit, State) ->
-    error_logger:info_msg("reloader do reload ... ~n", []), 
+    error_logger:info_msg("reloader do reload ... ~n", []),
     %% TimerRef = erlang:send_after(?RERODER_CHECK_TIME, self(), doit),
     Now = stamp(),
     try
@@ -148,15 +148,23 @@ doit(From, To) ->
      end || {Module, Filename} <- code:all_loaded(), is_list(Filename)].
 
 reload(Module) ->
-    error_logger:info_msg("Reloading ~p ...", [Module]),
-    code:purge(Module),
-    case code:load_file(Module) of
-        {module, Module} ->
-            error_logger:info_msg("reload ~w ok.~n", [Module]),
-            reload;
-        {error, Reason} ->
-            error_logger:error_msg("reload fail: ~p.~n", [Reason]),
-            error
+    GprocModules = [gproc,gproc_app,gproc_bcast,gproc_dist,gproc_info,
+                        gproc_init,gproc_lib,gproc_monitor,gproc_pool,
+                        gproc_ps,gproc_pt,gproc_sup, gen_leader],
+    case lists:member(Module, GprocModules) of
+        true ->
+            ignore;
+        false ->
+            error_logger:info_msg("Reloading ~p ...", [Module]),
+            code:purge(Module),
+            case code:load_file(Module) of
+                {module, Module} ->
+                    error_logger:info_msg("reload ~w ok.~n", [Module]),
+                    reload;
+                {error, Reason} ->
+                    error_logger:error_msg("reload fail: ~p.~n", [Reason]),
+                    error
+            end
     end.
 
 
